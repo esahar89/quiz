@@ -1,0 +1,6 @@
+{
+  "name": "منصة اختبار BIOS و UEFI والموصلات التفاعلي",
+  "description": "منصة اختبار تفاعلي مصور لأساسيات BIOS و UEFI وأنواع الموصلات للطلاب مع لوحة تحكم وقاعدة بيانات تفصيلية لنتائج الطلاب.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

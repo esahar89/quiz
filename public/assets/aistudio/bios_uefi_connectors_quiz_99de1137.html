@@ -1,0 +1,1688 @@
+<html lang="ar" dir="rtl"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxMTczMzkxMjAxMTUwMjc1Njk2NyIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzU4ZjczZmMyMDhiY2JhMzhfYmlvc191ZWZpX2Nvbm5lY3RvcnNfcXVpei5odG1sLTY1OSJ9LCJleHAiOjE3OTI5MzE0OTcsImlhdCI6MTc5MjkyNzg5NywiYWxnIjoiUlMyNTYifQ.Td48v4pvsFqzI776VSDvNTiXFCFbWeNztsvImlPijUQ2HHyRxHZAQWKgbcGalzoKMKzwllYN_2AU4NiBglscJ51SWtqFgUxhW0YqDVsSBeF4xpjtvnzaPaNJ-mMr8SyttnxK3GUKoThBDkY6cmtL5LbD4Z4b-B5p4dwLNfM25-aKyy3ZNG8Ywfq69xxqQh_6Rw7CjumphEToV-SrsKLJQlgIJqhqlR-nOXcG0Y9UiTR46bA7a3YZZ8n4MA3l29t_h4_E8YsMHgNlJxqa41wovnAFCPWduCVwG_fH5euCsCtwKX3N1ydX7IrhgTrPhWUY_uMJV0_pr2FKbBXmGQDCYQ","c_58f73fc208bcba38_bios_uefi_connectors_quiz.html-659")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار تفاعلي مصور: أساسيات BIOS و UEFI وأنواع الموصلات</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        .option-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: translateX(-4px);
+        }
+        .svg-container svg {
+            max-height: 210px;
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+            }
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.sticky{position:sticky}.top-0{top:0px}.z-30{z-index:30}.mx-auto{margin-left:auto;margin-right:auto}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.mb-5{margin-bottom:1.25rem}.mt-2{margin-top:0.5rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-2\.5{height:0.625rem}.h-20{height:5rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-full{height:100%}.h-8{height:2rem}.min-h-screen{min-height:100vh}.w-10{width:2.5rem}.w-20{width:5rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-full{width:100%}.w-8{width:2rem}.max-w-4xl{max-width:56rem}.max-w-md{max-width:28rem}.shrink-0{flex-shrink:0}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-3\.5{gap:0.875rem}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-cyan-500\/40{border-color:rgb(6 182 212 / 0.4)}.border-emerald-400\/40{border-color:rgb(52 211 153 / 0.4)}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-700\/80{border-color:rgb(51 65 85 / 0.8)}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-blue-500\/30{border-color:rgb(59 130 246 / 0.3)}.border-slate-600{--tw-border-opacity:1;border-color:rgb(71 85 105 / var(--tw-border-opacity, 1))}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-emerald-500\/20{background-color:rgb(16 185 129 / 0.2)}.bg-slate-700{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.bg-slate-700\/70{background-color:rgb(51 65 85 / 0.7)}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-800\/80{background-color:rgb(30 41 59 / 0.8)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/90{background-color:rgb(15 23 42 / 0.9)}.bg-blue-500\/10{background-color:rgb(59 130 246 / 0.1)}.bg-slate-800\/90{background-color:rgb(30 41 59 / 0.9)}.bg-slate-900\/80{background-color:rgb(15 23 42 / 0.8)}.bg-slate-950\/90{background-color:rgb(2 6 23 / 0.9)}.bg-gradient-to-b{background-image:linear-gradient(to bottom, var(--tw-gradient-stops))}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-l{background-image:linear-gradient(to left, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-blue-500{--tw-gradient-from:#3b82f6 var(--tw-gradient-from-position);--tw-gradient-to:rgb(59 130 246 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-blue-600{--tw-gradient-from:#2563eb var(--tw-gradient-from-position);--tw-gradient-to:rgb(37 99 235 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-cyan-400{--tw-gradient-from:#22d3ee var(--tw-gradient-from-position);--tw-gradient-to:rgb(34 211 238 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-slate-800{--tw-gradient-from:#1e293b var(--tw-gradient-from-position);--tw-gradient-to:rgb(30 41 59 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-white{--tw-gradient-from:#fff var(--tw-gradient-from-position);--tw-gradient-to:rgb(255 255 255 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-blue-600{--tw-gradient-to:#2563eb var(--tw-gradient-to-position)}.to-cyan-300{--tw-gradient-to:#67e8f9 var(--tw-gradient-to-position)}.to-cyan-400{--tw-gradient-to:#22d3ee var(--tw-gradient-to-position)}.to-cyan-500{--tw-gradient-to:#06b6d4 var(--tw-gradient-to-position)}.to-slate-900{--tw-gradient-to:#0f172a var(--tw-gradient-to-position)}.bg-clip-text{-webkit-background-clip:text;background-clip:text}.p-0\.5{padding:0.125rem}.p-1{padding:0.25rem}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-3\.5{padding:0.875rem}.p-5{padding:1.25rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.text-center{text-align:center}.text-right{text-align:right}.text-2xl{font-size:1.5rem;line-height:2rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-semibold{font-weight:600}.leading-relaxed{line-height:1.625}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-cyan-400{--tw-text-opacity:1;color:rgb(34 211 238 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-950{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.text-transparent{color:transparent}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-cyan-300{--tw-text-opacity:1;color:rgb(103 232 249 / var(--tw-text-opacity, 1))}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-blue-500\/20{--tw-shadow-color:rgb(59 130 246 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.shadow-blue-600\/30{--tw-shadow-color:rgb(37 99 235 / 0.3);--tw-shadow:var(--tw-shadow-colored)}.shadow-cyan-500\/20{--tw-shadow-color:rgb(6 182 212 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.duration-500{transition-duration:500ms}.hover\:bg-blue-500:hover{--tw-bg-opacity:1;background-color:rgb(59 130 246 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-600:hover{--tw-bg-opacity:1;background-color:rgb(71 85 105 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-900:hover{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.hover\:from-blue-500:hover{--tw-gradient-from:#3b82f6 var(--tw-gradient-from-position);--tw-gradient-to:rgb(59 130 246 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.hover\:to-cyan-400:hover{--tw-gradient-to:#22d3ee var(--tw-gradient-to-position)}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.disabled\:pointer-events-none:disabled{pointer-events:none}.disabled\:opacity-40:disabled{opacity:0.4}@media (min-width: 640px){.sm\:p-8{padding:2rem}.sm\:p-4{padding:1rem}.sm\:p-7{padding:1.75rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}.sm\:text-xl{font-size:1.25rem;line-height:1.75rem}.sm\:text-base{font-size:1rem;line-height:1.5rem}}</style></head>
+<body class="bg-slate-900 text-slate-100 min-h-screen transition-colors duration-300">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 no-print">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-extrabold bg-gradient-to-l from-white to-cyan-300 bg-clip-text text-transparent">
+                        اختبار BIOS و UEFI والموصلات
+                    </h1>
+                    <p class="text-xs text-slate-400">مستوى سهل للمبتدئين • مدعم بالصور التوضيحية المباشرة (14 سؤالاً)</p>
+                </div>
+            </div>
+
+            <!-- Mode Switcher & Actions -->
+            <div class="flex items-center gap-2">
+                <div class="bg-slate-800 p-1 rounded-xl flex items-center text-xs sm:text-sm border border-slate-700">
+                    <button id="btnModeStep" onclick="switchMode('step')" class="px-3 py-1.5 rounded-lg font-bold transition-all bg-blue-600 text-white shadow">
+                        سؤال بسؤال
+                    </button>
+                    <button id="btnModeAll" onclick="switchMode('all')" class="px-3 py-1.5 rounded-lg font-bold transition-all text-slate-300 hover:text-white">
+                        ورقة كاملة
+                    </button>
+                </div>
+
+                <button onclick="downloadStandaloneQuiz()" title="تحميل الاختبار كملف HTML" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-400 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-4xl mx-auto px-4 py-6">
+
+        <!-- Score & Progress Bar Card -->
+        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 mb-6 shadow-xl no-print">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+                <div class="flex items-center gap-4">
+                    <div class="bg-slate-900/90 px-3.5 py-2 rounded-xl border border-slate-700">
+                        <span class="text-xs text-slate-400 block">الأسئلة المجابة</span>
+                        <span id="answeredCounter" class="text-lg font-extrabold text-cyan-400">0 / 14</span>
+                    </div>
+                    <div class="bg-slate-900/90 px-3.5 py-2 rounded-xl border border-slate-700">
+                        <span class="text-xs text-slate-400 block">النتيجة الحالية</span>
+                        <span id="scoreCounter" class="text-lg font-extrabold text-emerald-400">0 صحيحة</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="resetQuiz()" class="px-3.5 py-2 rounded-xl bg-slate-700/70 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        إعادة الاختبار
+                    </button>
+                </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                <div id="progressBar" class="bg-gradient-to-l from-cyan-400 to-blue-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quizContainer" class="space-y-6"><div class="bg-slate-800/90 border border-slate-700 rounded-3xl p-5 sm:p-7 shadow-xl transition-all">
+                <!-- Question Header -->
+                <div class="flex items-center justify-between gap-2 mb-4">
+                    <span class="inline-flex items-center gap-2 px-3.5 py-1 rounded-xl bg-blue-500/10 border border-blue-500/30 text-cyan-300 font-extrabold text-sm">
+                        السؤال 1 من 14
+                    </span>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-slate-700 text-slate-300">لم تتم الإجابة</span>
+                </div>
+
+                <!-- Question Text -->
+                <h2 class="text-lg sm:text-xl font-extrabold text-white leading-relaxed mb-4">
+                    ما هي الوظيفة الأساسية لنظام BIOS في جهاز الحاسوب عند تشغيله؟
+                </h2>
+
+                <!-- Direct Embedded SVG Illustration (Always visible, no links) -->
+                <div class="mb-5 bg-slate-950/90 border border-slate-700/80 rounded-2xl p-3 overflow-hidden shadow-inner">
+                    <div class="svg-container">
+                        
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"></rect>
+                <!-- Motherboard PCB Traces -->
+                <path d="M30 40 H150 L180 70 M30 100 H140 M30 160 H150 L180 130 M470 40 H350 L320 70 M470 100 H360 M470 160 H350 L320 130" stroke="#1e293b" stroke-width="3" fill="none"></path>
+                <!-- Metallic Pins -->
+                <g fill="#94a3b8">
+                    <rect x="165" y="52" width="20" height="8" rx="2"></rect>
+                    <rect x="165" y="76" width="20" height="8" rx="2"></rect>
+                    <rect x="165" y="100" width="20" height="8" rx="2"></rect>
+                    <rect x="165" y="124" width="20" height="8" rx="2"></rect>
+                    <rect x="165" y="148" width="20" height="8" rx="2"></rect>
+                    <rect x="315" y="52" width="20" height="8" rx="2"></rect>
+                    <rect x="315" y="76" width="20" height="8" rx="2"></rect>
+                    <rect x="315" y="100" width="20" height="8" rx="2"></rect>
+                    <rect x="315" y="124" width="20" height="8" rx="2"></rect>
+                    <rect x="315" y="148" width="20" height="8" rx="2"></rect>
+                </g>
+                <!-- BIOS Chip Body -->
+                <rect x="180" y="35" width="140" height="135" rx="8" fill="#1e293b" stroke="#475569" stroke-width="3"></rect>
+                <circle cx="200" cy="55" r="6" fill="#0f172a"></circle>
+                <text x="250" y="95" text-anchor="middle" fill="#38bdf8" font-family="monospace" font-weight="bold" font-size="24">BIOS</text>
+                <text x="250" y="120" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="12">ROM FIRMWARE</text>
+                <rect x="205" y="135" width="90" height="12" rx="4" fill="#0f172a"></rect>
+                <text x="250" y="144" text-anchor="middle" fill="#facc15" font-family="monospace" font-size="9">POST &amp; BOOT</text>
+            </svg>
+                    </div>
+                    <p class="text-center text-xs text-slate-400 mt-2 font-semibold">
+                        🔍 رسم توضيحي مباشر: شريحة BIOS الثابتة المثبتة على اللوحة الأم
+                    </p>
+                </div>
+
+                <!-- Options List -->
+                <div class="space-y-3">
+                    
+                    <button onclick="selectAnswer(0, 0)" class="option-btn w-full text-right p-3.5 sm:p-4 rounded-2xl border-2 flex items-center justify-between gap-3 bg-slate-900/80 hover:bg-slate-900 border-slate-700 text-slate-200">
+                        <div class="flex items-center gap-3.5">
+                            <span class="w-8 h-8 rounded-xl border flex items-center justify-center font-extrabold text-sm shrink-0 bg-slate-800 text-cyan-400 border-slate-600">
+                                أ
+                            </span>
+                            <span class="text-sm sm:text-base leading-relaxed">بدء فحص العتاد وإقلاع نظام التشغيل</span>
+                        </div>
+                        
+                    </button>
+                
+                    <button onclick="selectAnswer(0, 1)" class="option-btn w-full text-right p-3.5 sm:p-4 rounded-2xl border-2 flex items-center justify-between gap-3 bg-slate-900/80 hover:bg-slate-900 border-slate-700 text-slate-200">
+                        <div class="flex items-center gap-3.5">
+                            <span class="w-8 h-8 rounded-xl border flex items-center justify-center font-extrabold text-sm shrink-0 bg-slate-800 text-cyan-400 border-slate-600">
+                                ب
+                            </span>
+                            <span class="text-sm sm:text-base leading-relaxed">تصميم الصور والرسومات ثلاثية الأبعاد</span>
+                        </div>
+                        
+                    </button>
+                
+                    <button onclick="selectAnswer(0, 2)" class="option-btn w-full text-right p-3.5 sm:p-4 rounded-2xl border-2 flex items-center justify-between gap-3 bg-slate-900/80 hover:bg-slate-900 border-slate-700 text-slate-200">
+                        <div class="flex items-center gap-3.5">
+                            <span class="w-8 h-8 rounded-xl border flex items-center justify-center font-extrabold text-sm shrink-0 bg-slate-800 text-cyan-400 border-slate-600">
+                                ج
+                            </span>
+                            <span class="text-sm sm:text-base leading-relaxed">تصفح مواقع الإنترنت وتحميل الملفات</span>
+                        </div>
+                        
+                    </button>
+                
+                    <button onclick="selectAnswer(0, 3)" class="option-btn w-full text-right p-3.5 sm:p-4 rounded-2xl border-2 flex items-center justify-between gap-3 bg-slate-900/80 hover:bg-slate-900 border-slate-700 text-slate-200">
+                        <div class="flex items-center gap-3.5">
+                            <span class="w-8 h-8 rounded-xl border flex items-center justify-center font-extrabold text-sm shrink-0 bg-slate-800 text-cyan-400 border-slate-600">
+                                د
+                            </span>
+                            <span class="text-sm sm:text-base leading-relaxed">تبريد المعالج ومنع ارتفاع حرارته</span>
+                        </div>
+                        
+                    </button>
+                
+                </div>
+
+                <!-- Explanation Box -->
+                
+            </div></div>
+
+        <!-- Step Navigation Controls (only in step mode) -->
+        <div id="stepControls" class="mt-6 flex items-center justify-between gap-4 no-print">
+            <button id="prevBtn" onclick="prevQuestion()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 font-bold text-slate-200 disabled:opacity-40 disabled:pointer-events-none flex items-center gap-2 transition" disabled="">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                السؤال السابق
+            </button>
+
+            <span id="stepIndicator" class="text-sm font-bold text-slate-400">سؤال 1 من 14</span>
+
+            <button id="nextBtn" onclick="nextQuestion()" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold text-white shadow-lg shadow-blue-600/30 flex items-center gap-2 transition">السؤال التالي <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+        </div>
+
+        <!-- Final Results Card (Hidden until completed or requested) -->
+        <div id="resultModal" class="hidden mt-8 bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-cyan-500/40 rounded-3xl p-6 sm:p-8 text-center shadow-2xl">
+            <div id="resultBadge" class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-4xl">
+                🏆
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mb-2">اكتمل الاختبار!</h2>
+            <p id="resultFeedback" class="text-slate-300 mb-6 text-base sm:text-lg"></p>
+
+            <div class="grid grid-cols-3 gap-3 max-w-md mx-auto mb-6">
+                <div class="bg-slate-900/90 p-3 rounded-2xl border border-slate-700">
+                    <span class="text-xs text-slate-400 block">الدرجة النهائية</span>
+                    <span id="finalScoreText" class="text-xl sm:text-2xl font-extrabold text-cyan-400">0 / 14</span>
+                </div>
+                <div class="bg-slate-900/90 p-3 rounded-2xl border border-slate-700">
+                    <span class="text-xs text-slate-400 block">النسبة المئوية</span>
+                    <span id="finalPercentText" class="text-xl sm:text-2xl font-extrabold text-emerald-400">0%</span>
+                </div>
+                <div class="bg-slate-900/90 p-3 rounded-2xl border border-slate-700">
+                    <span class="text-xs text-slate-400 block">التقييم</span>
+                    <span id="finalGradeText" class="text-base sm:text-lg font-extrabold text-amber-400">-</span>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-3">
+                <button onclick="switchMode('all')" class="px-5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold transition">
+                    مراجعة جميع الإجابات والشروحات
+                </button>
+                <button onclick="resetQuiz()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold shadow-lg shadow-cyan-500/20 transition">
+                    إعادة المحاولة من جديد
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // High-detail Inline SVG illustrations for every question
+        const svgIllustrations = {
+            biosChip: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Motherboard PCB Traces -->
+                <path d="M30 40 H150 L180 70 M30 100 H140 M30 160 H150 L180 130 M470 40 H350 L320 70 M470 100 H360 M470 160 H350 L320 130" stroke="#1e293b" stroke-width="3" fill="none"/>
+                <!-- Metallic Pins -->
+                <g fill="#94a3b8">
+                    <rect x="165" y="52" width="20" height="8" rx="2"/>
+                    <rect x="165" y="76" width="20" height="8" rx="2"/>
+                    <rect x="165" y="100" width="20" height="8" rx="2"/>
+                    <rect x="165" y="124" width="20" height="8" rx="2"/>
+                    <rect x="165" y="148" width="20" height="8" rx="2"/>
+                    <rect x="315" y="52" width="20" height="8" rx="2"/>
+                    <rect x="315" y="76" width="20" height="8" rx="2"/>
+                    <rect x="315" y="100" width="20" height="8" rx="2"/>
+                    <rect x="315" y="124" width="20" height="8" rx="2"/>
+                    <rect x="315" y="148" width="20" height="8" rx="2"/>
+                </g>
+                <!-- BIOS Chip Body -->
+                <rect x="180" y="35" width="140" height="135" rx="8" fill="#1e293b" stroke="#475569" stroke-width="3"/>
+                <circle cx="200" cy="55" r="6" fill="#0f172a"/>
+                <text x="250" y="95" text-anchor="middle" fill="#38bdf8" font-family="monospace" font-weight="bold" font-size="24">BIOS</text>
+                <text x="250" y="120" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="12">ROM FIRMWARE</text>
+                <rect x="205" y="135" width="90" height="12" rx="4" fill="#0f172a"/>
+                <text x="250" y="144" text-anchor="middle" fill="#facc15" font-family="monospace" font-size="9">POST &amp; BOOT</text>
+            </svg>`,
+
+            uefiGui: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Monitor Frame -->
+                <rect x="85" y="15" width="330" height="170" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+                <!-- Top Header -->
+                <rect x="95" y="25" width="310" height="26" rx="5" fill="#0284c7"/>
+                <text x="115" y="42" fill="#ffffff" font-family="sans-serif" font-weight="bold" font-size="12">UEFI BIOS Utility - EZ Mode</text>
+                <circle cx="388" cy="38" r="6" fill="#38bdf8"/>
+                <!-- Dashboard Widgets -->
+                <rect x="95" y="58" width="145" height="65" rx="6" fill="#0f172a" stroke="#334155"/>
+                <text x="167" y="75" text-anchor="middle" fill="#94a3b8" font-size="10">حرارة المعالج CPU</text>
+                <circle cx="167" cy="100" r="16" fill="none" stroke="#22c55e" stroke-width="4"/>
+                <text x="167" y="104" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">42°C</text>
+
+                <rect x="250" y="58" width="155" height="65" rx="6" fill="#0f172a" stroke="#334155"/>
+                <text x="327" y="75" text-anchor="middle" fill="#94a3b8" font-size="10">ترتيب الإقلاع (سحب وإفلات)</text>
+                <rect x="265" y="85" width="35" height="25" rx="4" fill="#0369a1"/>
+                <text x="282" y="101" text-anchor="middle" fill="#fff" font-size="9">SSD</text>
+                <rect x="310" y="85" width="35" height="25" rx="4" fill="#334155"/>
+                <text x="327" y="101" text-anchor="middle" fill="#fff" font-size="9">USB</text>
+                <rect x="355" y="85" width="35" height="25" rx="4" fill="#334155"/>
+                <text x="372" y="101" text-anchor="middle" fill="#fff" font-size="9">DVD</text>
+
+                <!-- Bottom Bar -->
+                <rect x="95" y="132" width="310" height="40" rx="6" fill="#0f172a" stroke="#334155"/>
+                <rect x="110" y="142" width="80" height="20" rx="4" fill="#10b981"/>
+                <text x="150" y="156" text-anchor="middle" fill="#0f172a" font-weight="bold" font-size="10">حفظ وخروج</text>
+
+                <!-- Mouse Cursor Highlight -->
+                <g transform="translate(285, 98)">
+                    <circle cx="5" cy="5" r="18" fill="#facc15" fill-opacity="0.25"/>
+                    <polygon points="0,0 0,22 6,17 11,26 15,24 10,15 17,15" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+                </g>
+            </svg>`,
+
+            hdmiPort: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Outer Metal Shield (HDMI D-Bevel Shape) -->
+                <polygon points="120,55 380,55 380,110 350,145 150,145 120,110" fill="#334155" stroke="#94a3b8" stroke-width="6" stroke-linejoin="round"/>
+                <polygon points="132,65 368,65 368,106 343,135 157,135 132,106" fill="#090d16"/>
+                <!-- Center Pin Tongue -->
+                <rect x="155" y="92" width="190" height="14" rx="2" fill="#1e293b"/>
+                <!-- 19 Gold Pins -->
+                <g fill="#facc15">
+                    <rect x="162" y="88" width="12" height="5" rx="1"/>
+                    <rect x="182" y="88" width="12" height="5" rx="1"/>
+                    <rect x="202" y="88" width="12" height="5" rx="1"/>
+                    <rect x="222" y="88" width="12" height="5" rx="1"/>
+                    <rect x="242" y="88" width="12" height="5" rx="1"/>
+                    <rect x="262" y="88" width="12" height="5" rx="1"/>
+                    <rect x="282" y="88" width="12" height="5" rx="1"/>
+                    <rect x="302" y="88" width="12" height="5" rx="1"/>
+                    <rect x="322" y="88" width="12" height="5" rx="1"/>
+                    <!-- Bottom row pins -->
+                    <rect x="172" y="105" width="12" height="5" rx="1"/>
+                    <rect x="192" y="105" width="12" height="5" rx="1"/>
+                    <rect x="212" y="105" width="12" height="5" rx="1"/>
+                    <rect x="232" y="105" width="12" height="5" rx="1"/>
+                    <rect x="252" y="105" width="12" height="5" rx="1"/>
+                    <rect x="272" y="105" width="12" height="5" rx="1"/>
+                    <rect x="292" y="105" width="12" height="5" rx="1"/>
+                    <rect x="312" y="105" width="12" height="5" rx="1"/>
+                </g>
+                <text x="250" y="36" text-anchor="middle" fill="#cbd5e1" font-family="sans-serif" font-weight="bold" font-size="15">منفذ رقمي لنقل الصورة والصوت معاً (19 سنّاً)</text>
+                <text x="250" y="178" text-anchor="middle" fill="#38bdf8" font-family="monospace" font-weight="bold" font-size="16">HIGH-DEFINITION MULTIMEDIA</text>
+            </svg>`,
+
+            sataPort: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Motherboard SATA Header -->
+                <rect x="135" y="50" width="230" height="95" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="4"/>
+                <rect x="150" y="62" width="200" height="70" fill="#090d16"/>
+                <!-- Characteristic L-Shaped Tongue -->
+                <path d="M 175 88 H 315 V 102 H 192 V 122 H 175 Z" fill="#334155" stroke="#94a3b8" stroke-width="2"/>
+                <!-- 7 Gold Contacts on L-Tongue -->
+                <g fill="#facc15">
+                    <rect x="202" y="83" width="10" height="6" rx="1"/>
+                    <rect x="218" y="83" width="10" height="6" rx="1"/>
+                    <rect x="234" y="83" width="10" height="6" rx="1"/>
+                    <rect x="250" y="83" width="10" height="6" rx="1"/>
+                    <rect x="266" y="83" width="10" height="6" rx="1"/>
+                    <rect x="282" y="83" width="10" height="6" rx="1"/>
+                    <rect x="298" y="83" width="10" height="6" rx="1"/>
+                </g>
+                <text x="250" y="35" text-anchor="middle" fill="#e2e8f0" font-size="14" font-weight="bold">منفذ تخزين داخلي بتصميم حرف (L) المميز (7 أسنان)</text>
+                <text x="250" y="175" text-anchor="middle" fill="#f87171" font-family="monospace" font-weight="bold" font-size="16">HDD / SSD STORAGE PORT</text>
+            </svg>`,
+
+            cmosBattery: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- PCB Background Lines -->
+                <circle cx="250" cy="100" r="82" fill="#1e293b" stroke="#475569" stroke-width="4"/>
+                <!-- Black Plastic Socket Retainer Clips -->
+                <rect x="160" y="85" width="18" height="30" rx="3" fill="#090d16"/>
+                <rect x="322" y="85" width="18" height="30" rx="3" fill="#090d16"/>
+                <rect x="235" y="168" width="30" height="16" rx="3" fill="#cbd5e1"/>
+                <!-- Metallic Silver Coin Cell -->
+                <defs>
+                    <linearGradient id="coinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#f8fafc"/>
+                        <stop offset="50%" stop-color="#cbd5e1"/>
+                        <stop offset="100%" stop-color="#64748b"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="250" cy="100" r="66" fill="url(#coinGrad)" stroke="#e2e8f0" stroke-width="3"/>
+                <circle cx="250" cy="100" r="58" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 2"/>
+                <!-- Plus Sign & Markings -->
+                <text x="250" y="72" text-anchor="middle" fill="#334155" font-family="monospace" font-weight="bold" font-size="26">+</text>
+                <text x="250" y="105" text-anchor="middle" fill="#1e293b" font-family="monospace" font-weight="bold" font-size="22">CR2032</text>
+                <text x="250" y="128" text-anchor="middle" fill="#334155" font-family="sans-serif" font-weight="bold" font-size="12">LITHIUM 3V</text>
+                <text x="250" y="145" text-anchor="middle" fill="#475569" font-family="monospace" font-size="10">CMOS BATTERY</text>
+            </svg>`,
+
+            usbC: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Symmetrical Oval Outer Shell -->
+                <rect x="125" y="60" width="250" height="80" rx="40" fill="#475569" stroke="#cbd5e1" stroke-width="6"/>
+                <rect x="137" y="72" width="226" height="56" rx="28" fill="#090d16"/>
+                <!-- Central Reversible Tongue -->
+                <rect x="165" y="93" width="170" height="14" rx="7" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+                <!-- Top & Bottom Symmetrical Gold Pins (12 each side) -->
+                <g fill="#facc15">
+                    <rect x="178" y="88" width="8" height="5" rx="1"/>
+                    <rect x="191" y="88" width="8" height="5" rx="1"/>
+                    <rect x="204" y="88" width="8" height="5" rx="1"/>
+                    <rect x="217" y="88" width="8" height="5" rx="1"/>
+                    <rect x="230" y="88" width="8" height="5" rx="1"/>
+                    <rect x="243" y="88" width="8" height="5" rx="1"/>
+                    <rect x="256" y="88" width="8" height="5" rx="1"/>
+                    <rect x="269" y="88" width="8" height="5" rx="1"/>
+                    <rect x="282" y="88" width="8" height="5" rx="1"/>
+                    <rect x="295" y="88" width="8" height="5" rx="1"/>
+                    <rect x="308" y="88" width="8" height="5" rx="1"/>
+                    <!-- Bottom symmetrical pins -->
+                    <rect x="178" y="107" width="8" height="5" rx="1"/>
+                    <rect x="191" y="107" width="8" height="5" rx="1"/>
+                    <rect x="204" y="107" width="8" height="5" rx="1"/>
+                    <rect x="217" y="107" width="8" height="5" rx="1"/>
+                    <rect x="230" y="107" width="8" height="5" rx="1"/>
+                    <rect x="243" y="107" width="8" height="5" rx="1"/>
+                    <rect x="256" y="107" width="8" height="5" rx="1"/>
+                    <rect x="269" y="107" width="8" height="5" rx="1"/>
+                    <rect x="282" y="107" width="8" height="5" rx="1"/>
+                    <rect x="295" y="107" width="8" height="5" rx="1"/>
+                    <rect x="308" y="107" width="8" height="5" rx="1"/>
+                </g>
+                <!-- Reversible Arrows -->
+                <path d="M85 80 C65 100, 65 100, 85 120" stroke="#38bdf8" stroke-width="3" fill="none"/>
+                <polygon points="85,75 92,85 78,85" fill="#38bdf8"/>
+                <polygon points="85,125 92,115 78,115" fill="#38bdf8"/>
+                <text x="250" y="38" text-anchor="middle" fill="#38bdf8" font-size="15" font-weight="bold">تصميم بيضاوي متماثل تماماً (24 سنّاً)</text>
+                <text x="250" y="175" text-anchor="middle" fill="#cbd5e1" font-family="monospace" font-size="15">USB TYPE-C REVERSIBLE</text>
+            </svg>`,
+
+            secureBoot: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Glow Circle -->
+                <circle cx="250" cy="100" r="75" fill="#10b981" fill-opacity="0.1"/>
+                <!-- Security Shield -->
+                <path d="M250 25 L320 52 V102 C320 145 250 175 250 175 C250 175 180 145 180 102 V52 L250 25 Z" fill="#065f46" stroke="#10b981" stroke-width="4"/>
+                <!-- Padlock inside Shield -->
+                <rect x="230" y="92" width="40" height="34" rx="5" fill="#facc15"/>
+                <path d="M238 92 V78 C238 68 262 68 262 78 V92" stroke="#facc15" stroke-width="5" fill="none"/>
+                <circle cx="250" cy="107" r="4" fill="#0f172a"/>
+                <rect x="248" y="109" width="4" height="9" fill="#0f172a"/>
+                <!-- Labels -->
+                <rect x="70" y="82" width="85" height="32" rx="6" fill="#1e293b" stroke="#10b981"/>
+                <text x="112" y="102" text-anchor="middle" fill="#34d399" font-size="11" font-weight="bold">توقيع موثوق ✓</text>
+                <rect x="345" y="82" width="85" height="32" rx="6" fill="#1e293b" stroke="#ef4444"/>
+                <text x="387" y="102" text-anchor="middle" fill="#f87171" font-size="11" font-weight="bold">حظر الفيروسات ✕</text>
+            </svg>`,
+
+            rj45Ethernet: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Ethernet Port Wall Jack + Plug -->
+                <rect x="155" y="30" width="190" height="140" rx="12" fill="#1e293b" stroke="#64748b" stroke-width="4"/>
+                <!-- Inner Jack Cutout with Top Clip Notch -->
+                <polygon points="180,65 225,65 225,48 275,48 275,65 320,65 320,145 180,145" fill="#090d16" stroke="#475569" stroke-width="2"/>
+                <!-- Status LEDs -->
+                <rect x="182" y="46" width="24" height="10" rx="2" fill="#22c55e"/>
+                <rect x="294" y="46" width="24" height="10" rx="2" fill="#f59e0b"/>
+                <!-- 8 Gold Contacts (8P8C) -->
+                <g fill="#facc15">
+                    <rect x="195" y="115" width="8" height="24" rx="1"/>
+                    <rect x="210" y="115" width="8" height="24" rx="1"/>
+                    <rect x="225" y="115" width="8" height="24" rx="1"/>
+                    <rect x="240" y="115" width="8" height="24" rx="1"/>
+                    <rect x="255" y="115" width="8" height="24" rx="1"/>
+                    <rect x="270" y="115" width="8" height="24" rx="1"/>
+                    <rect x="285" y="115" width="8" height="24" rx="1"/>
+                    <rect x="300" y="115" width="8" height="24" rx="1"/>
+                </g>
+                <text x="250" y="188" text-anchor="middle" fill="#38bdf8" font-family="monospace" font-weight="bold" font-size="14">8P8C NETWORK CONNECTOR (LAN)</text>
+            </svg>`,
+
+            bootKeys: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Keycap 1: DEL -->
+                <g transform="translate(105, 45)">
+                    <rect x="0" y="8" width="120" height="105" rx="14" fill="#334155"/>
+                    <rect x="6" y="0" width="108" height="95" rx="12" fill="#1e293b" stroke="#38bdf8" stroke-width="3"/>
+                    <text x="60" y="55" text-anchor="middle" fill="#38bdf8" font-family="monospace" font-weight="bold" font-size="28">Delete</text>
+                    <text x="60" y="78" text-anchor="middle" fill="#94a3b8" font-size="11">زر الحذف</text>
+                </g>
+                <text x="250" y="105" text-anchor="middle" fill="#64748b" font-weight="bold" font-size="20">أو</text>
+                <!-- Keycap 2: F2 -->
+                <g transform="translate(275, 45)">
+                    <rect x="0" y="8" width="120" height="105" rx="14" fill="#334155"/>
+                    <rect x="6" y="0" width="108" height="95" rx="12" fill="#1e293b" stroke="#facc15" stroke-width="3"/>
+                    <text x="60" y="55" text-anchor="middle" fill="#facc15" font-family="monospace" font-weight="bold" font-size="30">F2</text>
+                    <text x="60" y="78" text-anchor="middle" fill="#94a3b8" font-size="11">مفتاح وظيفي</text>
+                </g>
+                <text x="250" y="182" text-anchor="middle" fill="#cbd5e1" font-size="13">يتم الضغط عليها بشكل متكرر فور تشغيل زر الطاقة</text>
+            </svg>`,
+
+            atx24Pin: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Latch Clip on Top -->
+                <rect x="220" y="32" width="60" height="16" rx="3" fill="#475569" stroke="#94a3b8" stroke-width="2"/>
+                <!-- 24-Pin Housing Block -->
+                <rect x="65" y="48" width="370" height="95" rx="6" fill="#1e293b" stroke="#cbd5e1" stroke-width="3"/>
+                <!-- 2 Rows x 12 Pins Grid -->
+                <g fill="#090d16" stroke="#64748b" stroke-width="1.5">
+                    <!-- Row 1 (12 pins) -->
+                    <rect x="78" y="58" width="24" height="32" rx="3"/><circle cx="90" cy="74" r="4" fill="#facc15"/>
+                    <rect x="107" y="58" width="24" height="32" rx="3"/><circle cx="119" cy="74" r="4" fill="#facc15"/>
+                    <rect x="136" y="58" width="24" height="32" rx="3"/><circle cx="148" cy="74" r="4" fill="#facc15"/>
+                    <rect x="165" y="58" width="24" height="32" rx="3"/><circle cx="177" cy="74" r="4" fill="#facc15"/>
+                    <rect x="194" y="58" width="24" height="32" rx="3"/><circle cx="206" cy="74" r="4" fill="#facc15"/>
+                    <rect x="223" y="58" width="24" height="32" rx="3"/><circle cx="235" cy="74" r="4" fill="#facc15"/>
+                    <rect x="252" y="58" width="24" height="32" rx="3"/><circle cx="264" cy="74" r="4" fill="#facc15"/>
+                    <rect x="281" y="58" width="24" height="32" rx="3"/><circle cx="293" cy="74" r="4" fill="#facc15"/>
+                    <rect x="310" y="58" width="24" height="32" rx="3"/><circle cx="322" cy="74" r="4" fill="#facc15"/>
+                    <rect x="339" y="58" width="24" height="32" rx="3"/><circle cx="351" cy="74" r="4" fill="#facc15"/>
+                    <!-- 20+4 Split Line -->
+                    <line x1="366" y1="48" x2="366" y2="143" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 2"/>
+                    <rect x="370" y="58" width="24" height="32" rx="3"/><circle cx="382" cy="74" r="4" fill="#facc15"/>
+                    <rect x="399" y="58" width="24" height="32" rx="3"/><circle cx="411" cy="74" r="4" fill="#facc15"/>
+
+                    <!-- Row 2 (12 pins) -->
+                    <rect x="78" y="98" width="24" height="32" rx="3"/><circle cx="90" cy="114" r="4" fill="#facc15"/>
+                    <rect x="107" y="98" width="24" height="32" rx="3"/><circle cx="119" cy="114" r="4" fill="#facc15"/>
+                    <rect x="136" y="98" width="24" height="32" rx="3"/><circle cx="148" cy="114" r="4" fill="#facc15"/>
+                    <rect x="165" y="98" width="24" height="32" rx="3"/><circle cx="177" cy="114" r="4" fill="#facc15"/>
+                    <rect x="194" y="98" width="24" height="32" rx="3"/><circle cx="206" cy="114" r="4" fill="#facc15"/>
+                    <rect x="223" y="98" width="24" height="32" rx="3"/><circle cx="235" cy="114" r="4" fill="#facc15"/>
+                    <rect x="252" y="98" width="24" height="32" rx="3"/><circle cx="264" cy="114" r="4" fill="#facc15"/>
+                    <rect x="281" y="98" width="24" height="32" rx="3"/><circle cx="293" cy="114" r="4" fill="#facc15"/>
+                    <rect x="310" y="98" width="24" height="32" rx="3"/><circle cx="322" cy="114" r="4" fill="#facc15"/>
+                    <rect x="339" y="98" width="24" height="32" rx="3"/><circle cx="351" cy="114" r="4" fill="#facc15"/>
+                    <rect x="370" y="98" width="24" height="32" rx="3"/><circle cx="382" cy="114" r="4" fill="#facc15"/>
+                    <rect x="399" y="98" width="24" height="32" rx="3"/><circle cx="411" cy="114" r="4" fill="#facc15"/>
+                </g>
+                <text x="250" y="175" text-anchor="middle" fill="#38bdf8" font-family="monospace" font-weight="bold" font-size="14">24-PIN (20+4) MAIN POWER CONNECTOR</text>
+            </svg>`,
+
+            legacyBiosScreen: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Classic Blue Screen Monitor -->
+                <rect x="75" y="12" width="350" height="176" rx="6" fill="#0000aa" stroke="#94a3b8" stroke-width="4"/>
+                <rect x="83" y="20" width="334" height="160" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+                <!-- Top Title -->
+                <text x="250" y="36" text-anchor="middle" fill="#ffff55" font-family="monospace" font-weight="bold" font-size="12">CMOS SETUP UTILITY - STANDARD BIOS</text>
+                <line x1="83" y1="43" x2="417" y2="43" stroke="#ffffff" stroke-width="1"/>
+                <!-- Text Items -->
+                <text x="95" y="62" fill="#ffffff" font-family="monospace" font-size="11">System Time         [13:25:10]</text>
+                <text x="95" y="80" fill="#ffffff" font-family="monospace" font-size="11">System Date         [Sun, Oct 25 2026]</text>
+                <rect x="92" y="89" width="215" height="15" fill="#aa0000"/>
+                <text x="95" y="100" fill="#ffff55" font-family="monospace" font-size="11">&gt; Primary Master    [Hard Disk]</text>
+                <text x="95" y="118" fill="#ffffff" font-family="monospace" font-size="11">&gt; Primary Slave     [None]</text>
+                <text x="95" y="136" fill="#ffffff" font-family="monospace" font-size="11">&gt; Boot Sequence     [A, C, CD-ROM]</text>
+                <!-- Bottom Legend -->
+                <line x1="83" y1="152" x2="417" y2="152" stroke="#ffffff" stroke-width="1"/>
+                <text x="250" y="168" text-anchor="middle" fill="#ffff55" font-family="monospace" font-size="10">↑↓→←:Move   Enter:Select   F10:Save   ESC:Exit</text>
+            </svg>`,
+
+            hdmiCablePlug: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Back of Monitor / PC Panel -->
+                <rect x="40" y="30" width="160" height="140" rx="8" fill="#1e293b" stroke="#475569" stroke-width="3"/>
+                <text x="120" y="65" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-weight="bold" font-size="16">HDMI</text>
+                <polygon points="75,80 165,80 165,105 152,120 88,120 75,105" fill="#090d16" stroke="#cbd5e1" stroke-width="3"/>
+                <rect x="92" y="97" width="56" height="6" fill="#facc15"/>
+
+                <!-- Connection Arrow -->
+                <path d="M235 100 H185" stroke="#38bdf8" stroke-width="4" stroke-dasharray="5 3"/>
+                <polygon points="185,100 197,93 197,107" fill="#38bdf8"/>
+
+                <!-- Gold-Plated HDMI Male Connector & Black Cable -->
+                <polygon points="250,78 295,78 295,122 250,122" fill="#facc15" stroke="#eab308" stroke-width="2"/>
+                <line x1="262" y1="88" x2="282" y2="88" stroke="#713f12" stroke-width="3"/>
+                <line x1="262" y1="112" x2="282" y2="112" stroke="#713f12" stroke-width="3"/>
+                <!-- Connector Grip Housing -->
+                <rect x="295" y="65" width="95" height="70" rx="8" fill="#334155" stroke="#64748b" stroke-width="2"/>
+                <text x="342" y="105" text-anchor="middle" fill="#f8fafc" font-family="monospace" font-weight="bold" font-size="16">HDMI</text>
+                <!-- Cable Tail -->
+                <rect x="390" y="85" width="80" height="30" fill="#1e293b"/>
+            </svg>`,
+
+            redSataCable: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Flat Red SATA Cable -->
+                <path d="M30 80 H230 V125 H30 Z" fill="#dc2626" stroke="#ef4444" stroke-width="2"/>
+                <text x="125" y="108" text-anchor="middle" fill="#fecaca" font-family="monospace" font-weight="bold" font-size="15">SERIAL ATA 6Gb/s</text>
+
+                <!-- Black Connector Head with Metal Clip -->
+                <rect x="225" y="62" width="105" height="80" rx="6" fill="#1e293b" stroke="#475569" stroke-width="3"/>
+                <!-- Silver Locking Latch -->
+                <rect x="248" y="75" width="55" height="22" rx="3" fill="#cbd5e1"/>
+                <!-- L-Shaped Tip Output -->
+                <rect x="330" y="74" width="45" height="56" rx="3" fill="#090d16" stroke="#64748b" stroke-width="2"/>
+                <path d="M342 84 H368 V116 H358 V94 H342 Z" fill="#facc15"/>
+                <text x="425" y="100" text-anchor="middle" fill="#38bdf8" font-weight="bold" font-size="14">رأس بشكل</text>
+                <text x="425" y="122" text-anchor="middle" fill="#facc15" font-weight="bold" font-size="20">حرف L</text>
+            </svg>`,
+
+            postCheck: `
+            <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="200" rx="16" fill="#0f172a"/>
+                <!-- Diagnostic Checklist Screen -->
+                <rect x="90" y="20" width="320" height="160" rx="12" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
+                <text x="250" y="48" text-anchor="middle" fill="#38bdf8" font-family="monospace" font-weight="bold" font-size="16">POST: POWER-ON SELF-TEST</text>
+                <line x1="115" y1="58" x2="385" y2="58" stroke="#334155" stroke-width="2"/>
+
+                <!-- Check Items -->
+                <g font-family="monospace" font-size="13">
+                    <circle cx="135" cy="82" r="8" fill="#22c55e"/>
+                    <text x="135" y="86" text-anchor="middle" fill="#0f172a" font-weight="bold">✓</text>
+                    <text x="365" y="86" text-anchor="end" fill="#e2e8f0">CPU Processor Check ...... OK</text>
+
+                    <circle cx="135" cy="112" r="8" fill="#22c55e"/>
+                    <text x="135" y="116" text-anchor="middle" fill="#0f172a" font-weight="bold">✓</text>
+                    <text x="365" y="116" text-anchor="end" fill="#e2e8f0">RAM Memory Test .......... OK</text>
+
+                    <circle cx="135" cy="142" r="8" fill="#22c55e"/>
+                    <text x="135" y="146" text-anchor="middle" fill="#0f172a" font-weight="bold">✓</text>
+                    <text x="365" y="146" text-anchor="end" fill="#e2e8f0">VGA &amp; Keyboard Init ...... OK</text>
+                </g>
+            </svg>`
+        };
+
+        // 14 Easy-level questions with embedded SVG illustrations
+        const questions = [
+            {
+                id: 1,
+                question: "ما هي الوظيفة الأساسية لنظام BIOS في جهاز الحاسوب عند تشغيله؟",
+                svg: svgIllustrations.biosChip,
+                caption: "شريحة BIOS الثابتة المثبتة على اللوحة الأم",
+                options: [
+                    "بدء فحص العتاد وإقلاع نظام التشغيل",
+                    "تصميم الصور والرسومات ثلاثية الأبعاد",
+                    "تصفح مواقع الإنترنت وتحميل الملفات",
+                    "تبريد المعالج ومنع ارتفاع حرارته"
+                ],
+                correct: 0,
+                explanation: "يقوم نظام BIOS فور الضغط على زر التشغيل بفحص سلامة القطع الأساسية ثم تحميل نظام التشغيل (مثل ويندوز) من القرص الصلب إلى الذاكرة."
+            },
+            {
+                id: 2,
+                question: "ما هي الميزة الأبرز التي يقدمها نظام UEFI الحديث كبديل متطور لنظام BIOS التقليدي؟",
+                svg: svgIllustrations.uefiGui,
+                caption: "واجهة UEFI الرسومية الحديثة وتدعم مؤشر الفأرة",
+                options: [
+                    "واجهة رسومية حديثة تدعم استخدام الفأرة والأقراص الكبيرة",
+                    "يعمل بدون الحاجة إلى وجود لوحة أم أو معالج",
+                    "يمنع توصيل أي شاشة خارجية بالحاسوب",
+                    "يقتصر عمله على تشغيل الصوتيات فقط"
+                ],
+                correct: 0,
+                explanation: "يتميز UEFI بواجهة رسومية ملونة وسهلة الاستخدام تدعم التحكم بالفأرة، بالإضافة إلى دعم الأقراص الصلبة التي تزيد سعتها عن 2.2 تيرابايت."
+            },
+            {
+                id: 3,
+                question: "أي من هذه الموصلات يُستخدم بشكل شائع لتوصيل الشاشة أو التلفاز بالحاسوب لنقل الصورة والصوت الرقمي معاً بكابل واحد؟",
+                svg: svgIllustrations.hdmiPort,
+                caption: "منفذ العرض الرقمي عالي الدقة ذو 19 سنّاً",
+                options: [
+                    "HDMI",
+                    "RJ-45",
+                    "SATA",
+                    "PS/2"
+                ],
+                correct: 0,
+                explanation: "منفذ HDMI (High-Definition Multimedia Interface) هو المعيار الأشهر لنقل الفيديو عالي الدقة والصوت الرقمي معاً عبر كابل واحد."
+            },
+            {
+                id: 4,
+                question: "ما هو المنفذ القياسي الموجود على اللوحة الأم والمستخدم لتوصيل الأقراص الصلبة الداخلية (HDD أو SSD)؟",
+                svg: svgIllustrations.sataPort,
+                caption: "منفذ توصيل وحدات التخزين الداخلي على اللوحة الأم",
+                options: [
+                    "SATA",
+                    "VGA",
+                    "Ethernet",
+                    "Audio Jack"
+                ],
+                correct: 0,
+                explanation: "منفذ SATA (Serial ATA) هو المنفذ القياسي المخصص لربط محركات الأقراص الصلبة (HDD) وأقراص الحالة الصلبة (SATA SSD) باللوحة الأم."
+            },
+            {
+                id: 5,
+                question: "ما هو الاختصار الذي تشير إليه عملية الفحص الذاتي للمكونات فور تشغيل الحاسوب وقبل ظهور شعار النظام؟",
+                svg: svgIllustrations.postCheck,
+                caption: "عملية الفحص الذاتي للعتاد (المعالج، الذاكرة، البطاقة الرسومية)",
+                options: [
+                    "POST (Power-On Self-Test)",
+                    "HTML (HyperText Markup Language)",
+                    "HTTP (HyperText Transfer Protocol)",
+                    "WIFI (Wireless Fidelity)"
+                ],
+                correct: 0,
+                explanation: "عملية POST هي اختبار ذاتي يجريه الـ BIOS/UEFI فور وصول التيار الكهربائي للتأكد من وجود وسلامة المعالج والرامات ولوحة المفاتيح والشاشة."
+            },
+            {
+                id: 6,
+                question: "ما هي الميزة الرئيسية لمنفذ USB من النوع C (USB Type-C) مقارنة بالأنواع القديمة؟",
+                svg: svgIllustrations.usbC,
+                caption: "منفذ USB-C البيضاوي المتماثل",
+                options: [
+                    "إمكانية إدخال القابس بأي اتجاه (متماثل الوجهين) دون خطأ",
+                    "حجمه كبير جداً ولا يركب إلا في الطابعات القديمة",
+                    "ينقل الصوت التناظري فقط ولا ينقل البيانات",
+                    "يتطلب إيقاف تشغيل الحاسوب قبل توصيله"
+                ],
+                correct: 0,
+                explanation: "يتميز موصل USB Type-C بتصميمه البيضاوي المتماثل (Reversible)، مما يتيح للمستخدم تركيبه من أي وجه بسهولة مع سرعات عالية لنقل البيانات والطاقة."
+            },
+            {
+                id: 7,
+                question: "ما هو الهدف من خاصية الإقلاع الآمن (Secure Boot) في أنظمة UEFI الحديثة؟",
+                svg: svgIllustrations.secureBoot,
+                caption: "حماية عملية الإقلاع من البرمجيات الخبيثة غير الموثوقة",
+                options: [
+                    "منع تشغيل البرمجيات الخبيثة أو الأنظمة غير الموثوقة أثناء بدء التشغيل",
+                    "زيادة سرعة مروحة المعالج إلى أقصى حد",
+                    "حذف جميع الصور والملفات الشخصية تلقائياً",
+                    "إلغاء كلمة مرور حساب المستخدم في ويندوز"
+                ],
+                correct: 0,
+                explanation: "تتحقق ميزة Secure Boot من التوقيع الرقمي لملفات الإقلاع، مما يمنع الفيروسات والبرمجيات الخبيثة (Rootkits) من العمل قبل تحميل نظام التشغيل."
+            },
+            {
+                id: 8,
+                question: "أي من هذه الموصلات يُستخدم تقليدياً لربط كابل شبكة الإنترنت السلكي بجهاز الحاسوب؟",
+                svg: svgIllustrations.rj45Ethernet,
+                caption: "منفذ الشبكة السلكية ذو الـ 8 أطراف نحاسية",
+                options: [
+                    "RJ-45 (Ethernet)",
+                    "HDMI",
+                    "DVI",
+                    "Molex"
+                ],
+                correct: 0,
+                explanation: "موصل RJ-45 هو القابس القياسي لكابلات الشبكة المحلية السلكية (Ethernet / LAN) ويحتوي على 8 دبابيس نحاسية ومشبك بلاستيكي للتثبيت."
+            },
+            {
+                id: 9,
+                question: "كيف يدخل المستخدم عادةً إلى شاشة إعدادات BIOS أو UEFI عند بدء تشغيل الحاسوب؟",
+                svg: svgIllustrations.bootKeys,
+                caption: "المفاتيح الأكثر شيوعاً للدخول إلى إعدادات اللوحة الأم",
+                options: [
+                    "بالضغط المتكرر على زر محدد (مثل Delete أو F2) فور بدء التشغيل",
+                    "من خلال فتح متصفح الإنترنت وكتابة موقع جوجل",
+                    "عن طريق فصل كابل الشاشة وإعادة تركيبه",
+                    "بالضغط على زر إيقاف التشغيل لمدة 10 ثوانٍ"
+                ],
+                correct: 0,
+                explanation: "للدخول إلى إعدادات BIOS/UEFI يتم الضغط المتكرر على مفتاح مخصص يحدده مصنّع اللوحة الأم (وأشهرها Delete أو F2 أو F12) لحظة تشغيل الجهاز."
+            },
+            {
+                id: 10,
+                question: "ما هو الكابل المسؤول عن إمداد اللوحة الأم بمعظم الطاقة الكهربائية اللازمة من مزود الطاقة (PSU)؟",
+                svg: svgIllustrations.atx24Pin,
+                caption: "موصل الطاقة الرئيسي للوحة الأم المكوّن من 24 سنّاً",
+                options: [
+                    "كابل ATX الرئيسي ذو 24 سنّاً (24-Pin)",
+                    "كابل الصوت 3.5 ملم",
+                    "كابل الشاشة VGA",
+                    "كابل الشبكة RJ-11"
+                ],
+                correct: 0,
+                explanation: "موصل الطاقة ATX المكوّن من 24 سنّاً (أحياناً يأتي بتصميم 20+4) هو أضخم موصل على اللوحة الأم ويزودها بالتيار الكهربائي الرئيسي."
+            },
+            {
+                id: 11,
+                question: "بالنظر إلى الشكل التوضيحي للبطارية الدائرية (CR2032) المثبتة على اللوحة الأم، ما هي المهمة الرئيسية لهذه البطارية؟",
+                svg: svgIllustrations.cmosBattery,
+                caption: "بطارية الليثيوم المعدنية (CMOS CR2032) بجهد 3 فولت على اللوحة الأم",
+                options: [
+                    "الحفاظ على إعدادات BIOS والوقت والتاريخ عند فصل الكهرباء عن الجهاز",
+                    "تشغيل شاشة الحاسوب عند انقطاع التيار الكهربائي المنزلي",
+                    "تبريد شريحة المعالج الرسومي أثناء الألعاب",
+                    "تخزين الأفلام والألعاب الكبيرة بدلاً من القرص الصلب"
+                ],
+                correct: 0,
+                explanation: "تزود بطارية CMOS شريحة الذاكرة وساعة الوقت الفعلي (RTC) بطاقة مستمرة ليبقى التاريخ والوقت وإعدادات BIOS محفوظة حتى بعد فصل القابس الكهربائي."
+            },
+            {
+                id: 12,
+                question: "يُظهر الرسم التوضيحي أدناه شاشة زرقاء نصية كلاسيكية يتم التنقل فيها بلوحة المفاتيح فقط دون فأرة. ماذا تمثل هذه الشاشة؟",
+                svg: svgIllustrations.legacyBiosScreen,
+                caption: "واجهة الإعدادات الكلاسيكية ذات الخلفية الزرقاء والنصوص الصفراء والبيضاء",
+                options: [
+                    "نظام BIOS التقليدي القديم (Legacy BIOS)",
+                    "واجهة UEFI الرسومية ثلاثية الأبعاد",
+                    "شاشة سطح المكتب في نظام Windows 11",
+                    "واجهة تطبيق تحرير الصور والفيديو"
+                ],
+                correct: 0,
+                explanation: "الشاشة الزرقاء النصية البسيطة التي تعتمد كلياً على الأسهم ومفاتيح الوظائف (F1-F10) هي السمة الكلاسيكية لنظام BIOS التقليدي (Legacy BIOS)."
+            },
+            {
+                id: 13,
+                question: "يظهر في الرسم التوضيحي كابل ومنفذ معدني ذو حواف مشطوفة شائع جداً في الشاشات وأجهزة اللابتوب. ما اسم هذا الموصل؟",
+                svg: svgIllustrations.hdmiCablePlug,
+                caption: "توصيل كابل العرض الرقمي بمنفذه المطابق خلف الجهاز",
+                options: [
+                    "موصل ومنفذ HDMI عالي الدقة",
+                    "موصل الطاقة الثلاثي",
+                    "منفذ البطاقة الصوتية التناظري",
+                    "موصل المودم الهاتفي القديم"
+                ],
+                correct: 0,
+                explanation: "هذا التصميم المميز ذو الحليتين الجانبيتين المائلتين هو موصل ومنفذ HDMI القياسي لنقل الفيديو والصوت الرقمي."
+            },
+            {
+                id: 14,
+                question: "يظهر في الشكل التوضيحي كابل داخلي أحمر مسطح ينتهي برأس أسود بداخله مجرى على شكل حرف (L). فيمَ يُستخدم هذا الكابل؟",
+                svg: svgIllustrations.redSataCable,
+                caption: "كابل البيانات الداخلي ذو الطرف المصمم على شكل حرف L لمنع التركيب الخاطئ",
+                options: [
+                    "كابل بيانات SATA لتوصيل الأقراص الصلبة (HDD / SSD) باللوحة الأم",
+                    "كابل توصيل السماعات الخارجية ومضخم الصوت",
+                    "كابل تغذية المعالج المركزي بالطاقة 8-Pin",
+                    "كابل ربط الطابعة الخارجية عبر منفذ USB"
+                ],
+                correct: 0,
+                explanation: "كابل بيانات SATA يتميز بلونه المسطح (غالباً أحمر أو أسود) وتصميمه الداخلي على شكل حرف L لضمان تركيبه بالاتجاه الصحيح دائماً بين القرص الصلب واللوحة الأم."
+            }
+        ];
+
+        // State
+        let currentMode = 'step'; // 'step' or 'all'
+        let currentIndex = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+
+        // Initialize Quiz
+        function initQuiz() {
+            renderQuiz();
+            updateStats();
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const btnStep = document.getElementById('btnModeStep');
+            const btnAll = document.getElementById('btnModeAll');
+            const stepControls = document.getElementById('stepControls');
+
+            if (mode === 'step') {
+                btnStep.className = "px-3 py-1.5 rounded-lg font-bold transition-all bg-blue-600 text-white shadow";
+                btnAll.className = "px-3 py-1.5 rounded-lg font-bold transition-all text-slate-300 hover:text-white";
+                stepControls.classList.remove('hidden');
+            } else {
+                btnAll.className = "px-3 py-1.5 rounded-lg font-bold transition-all bg-blue-600 text-white shadow";
+                btnStep.className = "px-3 py-1.5 rounded-lg font-bold transition-all text-slate-300 hover:text-white";
+                stepControls.classList.add('hidden');
+            }
+            renderQuiz();
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+
+            if (currentMode === 'step') {
+                container.appendChild(createQuestionCard(questions[currentIndex], currentIndex));
+                updateStepButtons();
+            } else {
+                questions.forEach((q, idx) => {
+                    container.appendChild(createQuestionCard(q, idx));
+                });
+            }
+        }
+
+        function createQuestionCard(q, index) {
+            const card = document.createElement('div');
+            card.className = "bg-slate-800/90 border border-slate-700 rounded-3xl p-5 sm:p-7 shadow-xl transition-all";
+
+            const answered = userAnswers[index] !== null;
+            const isCorrect = answered && userAnswers[index] === q.correct;
+
+            const badgeStatus = answered
+                ? (isCorrect
+                    ? `<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">إجابة صحيحة ✓</span>`
+                    : `<span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">إجابة خاطئة ✕</span>`)
+                : `<span class="px-3 py-1 rounded-full text-xs font-bold bg-slate-700 text-slate-300">لم تتم الإجابة</span>`;
+
+            const arabicLetters = ['أ', 'ب', 'ج', 'د'];
+
+            let optionsHtml = q.options.map((opt, optIdx) => {
+                let btnStyle = "bg-slate-900/80 hover:bg-slate-900 border-slate-700 text-slate-200";
+                let letterStyle = "bg-slate-800 text-cyan-400 border-slate-600";
+                let iconHtml = "";
+
+                if (answered) {
+                    if (optIdx === q.correct) {
+                        btnStyle = "bg-emerald-950/80 border-emerald-500 text-emerald-200 font-bold shadow-lg shadow-emerald-950/50";
+                        letterStyle = "bg-emerald-500 text-slate-950 border-emerald-400";
+                        iconHtml = `<span class="text-emerald-400 font-extrabold text-lg">✓</span>`;
+                    } else if (optIdx === userAnswers[index] && optIdx !== q.correct) {
+                        btnStyle = "bg-rose-950/80 border-rose-500 text-rose-200";
+                        letterStyle = "bg-rose-500 text-white border-rose-400";
+                        iconHtml = `<span class="text-rose-400 font-extrabold text-lg">✕</span>`;
+                    } else {
+                        btnStyle = "bg-slate-900/40 border-slate-800 text-slate-500 opacity-65";
+                    }
+                }
+
+                return `
+                    <button onclick="selectAnswer(${index}, ${optIdx})" ${answered ? 'disabled' : ''}
+                        class="option-btn w-full text-right p-3.5 sm:p-4 rounded-2xl border-2 flex items-center justify-between gap-3 ${btnStyle}">
+                        <div class="flex items-center gap-3.5">
+                            <span class="w-8 h-8 rounded-xl border flex items-center justify-center font-extrabold text-sm shrink-0 ${letterStyle}">
+                                ${arabicLetters[optIdx]}
+                            </span>
+                            <span class="text-sm sm:text-base leading-relaxed">${opt}</span>
+                        </div>
+                        ${iconHtml}
+                    </button>
+                `;
+            }).join('');
+
+            const explanationHtml = answered ? `
+                <div class="mt-5 p-4 rounded-2xl bg-slate-900/95 border-r-4 ${isCorrect ? 'border-emerald-500' : 'border-amber-500'} text-sm leading-relaxed">
+                    <div class="font-extrabold mb-1 ${isCorrect ? 'text-emerald-400' : 'text-amber-400'}">
+                        💡 التوضيح العلمي:
+                    </div>
+                    <p class="text-slate-300">${q.explanation}</p>
+                </div>
+            ` : '';
+
+            card.innerHTML = `
+                <!-- Question Header -->
+                <div class="flex items-center justify-between gap-2 mb-4">
+                    <span class="inline-flex items-center gap-2 px-3.5 py-1 rounded-xl bg-blue-500/10 border border-blue-500/30 text-cyan-300 font-extrabold text-sm">
+                        السؤال ${index + 1} من ${questions.length}
+                    </span>
+                    ${badgeStatus}
+                </div>
+
+                <!-- Question Text -->
+                <h2 class="text-lg sm:text-xl font-extrabold text-white leading-relaxed mb-4">
+                    ${q.question}
+                </h2>
+
+                <!-- Direct Embedded SVG Illustration (Always visible, no links) -->
+                <div class="mb-5 bg-slate-950/90 border border-slate-700/80 rounded-2xl p-3 overflow-hidden shadow-inner">
+                    <div class="svg-container">
+                        ${q.svg}
+                    </div>
+                    <p class="text-center text-xs text-slate-400 mt-2 font-semibold">
+                        🔍 رسم توضيحي مباشر: ${q.caption}
+                    </p>
+                </div>
+
+                <!-- Options List -->
+                <div class="space-y-3">
+                    ${optionsHtml}
+                </div>
+
+                <!-- Explanation Box -->
+                ${explanationHtml}
+            `;
+
+            return card;
+        }
+
+        function selectAnswer(qIdx, optIdx) {
+            if (userAnswers[qIdx] !== null) return;
+            userAnswers[qIdx] = optIdx;
+            renderQuiz();
+            updateStats();
+        }
+
+        function updateStats() {
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            const correctCount = userAnswers.reduce((acc, ans, idx) => {
+                return acc + (ans === questions[idx].correct ? 1 : 0);
+            }, 0);
+
+            document.getElementById('answeredCounter').textContent = `${answeredCount} / ${questions.length}`;
+            document.getElementById('scoreCounter').textContent = `${correctCount} صحيحة`;
+
+            const percent = Math.round((answeredCount / questions.length) * 100);
+            document.getElementById('progressBar').style.width = `${percent}%`;
+
+            // Show final modal when all questions are answered
+            const resultModal = document.getElementById('resultModal');
+            if (answeredCount === questions.length) {
+                const scorePercent = Math.round((correctCount / questions.length) * 100);
+                document.getElementById('finalScoreText').textContent = `${correctCount} / ${questions.length}`;
+                document.getElementById('finalPercentText').textContent = `${scorePercent}%`;
+
+                let grade = "ممتاز 🌟";
+                let feedback = "أداء رائع جداً! لقد أتقنت أساسيات BIOS و UEFI وأنواع الموصلات بامتياز.";
+                if (scorePercent < 50) {
+                    grade = "يحتاج مراجعة 📚";
+                    feedback = "محاولة جيدة! راجع الشروحات المرفقة تحت كل سؤال وحاول مرة أخرى لتثبيت المعلومات.";
+                } else if (scorePercent < 80) {
+                    grade = "جيد جداً 👍";
+                    feedback = "مستوى جميل جداً! لديك معرفة أساسية قوية بمكونات الحاسوب والمنافذ.";
+                }
+
+                document.getElementById('finalGradeText').textContent = grade;
+                document.getElementById('resultFeedback').textContent = feedback;
+                resultModal.classList.remove('hidden');
+            } else {
+                resultModal.classList.add('hidden');
+            }
+        }
+
+        function updateStepButtons() {
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            const nextBtn = document.getElementById('nextBtn');
+            document.getElementById('stepIndicator').textContent = `سؤال ${currentIndex + 1} من ${questions.length}`;
+
+            if (currentIndex === questions.length - 1) {
+                nextBtn.innerHTML = `عرض كل الأسئلة <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>`;
+            } else {
+                nextBtn.innerHTML = `السؤال التالي <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>`;
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                renderQuiz();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                switchMode('all');
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuiz();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function resetQuiz() {
+            userAnswers = new Array(questions.length).fill(null);
+            currentIndex = 0;
+            renderQuiz();
+            updateStats();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function downloadStandaloneQuiz() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'bios_uefi_connectors_quiz.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Start on load
+        window.onload = initQuiz;
+    </script>
+
+</body></html>
