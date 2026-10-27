@@ -475,26 +475,27 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
   return jsonResponse({ ok: true });
 }
 
-export function installStaticHostApiFallback(): void {
-  const originalFetch = window.fetch.bind(window);
-
-  window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    const urlStr = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-
-    if (urlStr.startsWith('/api/')) {
-      try {
-        const response = await originalFetch(input, init);
-        const contentType = response.headers.get('content-type') || '';
-        // If static host (like Vercel static or GitHub Pages) returns 404 or HTML instead of JSON API
-        if (response.status === 404 || response.status === 405 || contentType.includes('text/html')) {
-          return handleLocalApiRequest(urlStr, init);
-        }
-        return response;
-      } catch {
-        return handleLocalApiRequest(urlStr, init);
+export async function apiFetch(
+  input: string,
+  init?: RequestInit
+): Promise<Response> {
+  if (input.startsWith('/api/')) {
+    try {
+      const response = await window.fetch(input, init);
+      const contentType = response.headers.get('content-type') || '';
+      if (
+        response.status === 404 ||
+        response.status === 405 ||
+        contentType.includes('text/html')
+      ) {
+        return handleLocalApiRequest(input, init);
       }
+      return response;
+    } catch {
+      return handleLocalApiRequest(input, init);
     }
+  }
 
-    return originalFetch(input, init);
-  };
+  return window.fetch(input, init);
 }
+

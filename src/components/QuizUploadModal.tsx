@@ -17,6 +17,7 @@ import {
   ParsedQuizDraft
 } from '../utils/quizParser';
 import { svgIllustrations, ARABIC_LETTERS } from '../data/questions';
+import { apiFetch } from '../utils/apiFallback';
 import type { QuizQuestion } from '../types/quiz';
 
 interface QuizUploadModalProps {
@@ -179,7 +180,7 @@ export const QuizUploadModal: React.FC<QuizUploadModalProps> = ({
     setErrorMsg(null);
 
     try {
-      const res = await fetch('/api/quizzes', {
+      const res = await apiFetch('/api/quizzes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -243,7 +244,7 @@ export const QuizUploadModal: React.FC<QuizUploadModalProps> = ({
 
     setSaving(true);
     try {
-      const res = await fetch('/api/quizzes', {
+      const res = await apiFetch('/api/quizzes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

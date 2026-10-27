@@ -1,4 +1,4 @@
-import { QuizQuestion } from '../types/quiz';
+import type { QuizQuestion } from '../types/quiz.ts';
 
 export const ARABIC_LETTERS = ['أ', 'ب', 'ج', 'د'] as const;
 

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { ARABIC_LETTERS, QUIZ_QUESTIONS } from '../data/questions';
 import { QuizUploadModal } from './QuizUploadModal';
+import { apiFetch } from '../utils/apiFallback';
 import type { DashboardPayload, StudentSubmission, QuizDefinition } from '../types/quiz';
 
 interface TeacherDashboardProps {
@@ -55,7 +56,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       const url = targetId
         ? `/api/dashboard?quizId=${encodeURIComponent(targetId)}`
         : '/api/dashboard';
-      const response = await fetch(url, { cache: 'no-store' });
+      const response = await apiFetch(url, { cache: 'no-store' });
       if (response.ok) {
         const payload = (await response.json()) as DashboardPayload;
         setData(payload);
@@ -84,7 +85,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const handleActivateQuizForStudents = async (quizId: string) => {
     setActivatingId(quizId);
     try {
-      const res = await fetch(`/api/quizzes/${encodeURIComponent(quizId)}/activate`, {
+      const res = await apiFetch(`/api/quizzes/${encodeURIComponent(quizId)}/activate`, {
         method: 'POST'
       });
       if (res.ok) {
@@ -100,7 +101,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     const clean = editingTitleValue.trim();
     if (!clean) return;
     try {
-      const res = await fetch(`/api/quizzes/${encodeURIComponent(quizId)}`, {
+      const res = await apiFetch(`/api/quizzes/${encodeURIComponent(quizId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: clean })
@@ -116,7 +117,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
   const handleDeleteQuiz = async (quizId: string) => {
     try {
-      const res = await fetch(`/api/quizzes/${encodeURIComponent(quizId)}`, {
+      const res = await apiFetch(`/api/quizzes/${encodeURIComponent(quizId)}`, {
         method: 'DELETE'
       });
       if (res.ok) {
@@ -137,7 +138,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
   const handleDeleteSubmission = async (submissionId: string) => {
     try {
-      const res = await fetch(`/api/submissions/${encodeURIComponent(submissionId)}`, {
+      const res = await apiFetch(`/api/submissions/${encodeURIComponent(submissionId)}`, {
         method: 'DELETE'
       });
       if (res.ok) {
@@ -153,7 +154,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   };
 
   const handleSeedSample = async () => {
-    await fetch('/api/dashboard/seed', { method: 'POST' });
+    await apiFetch('/api/dashboard/seed', { method: 'POST' });
     fetchDashboard();
   };
 

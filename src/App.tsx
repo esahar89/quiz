@@ -10,6 +10,7 @@ import { StepByStepQuiz } from './components/StepByStepQuiz';
 import { StudentResultView } from './components/StudentResultView';
 import { TeacherDashboard } from './components/TeacherDashboard';
 import { QUIZ_QUESTIONS } from './data/questions';
+import { apiFetch } from './utils/apiFallback';
 import type { QuizDefinition, StudentSubmission } from './types/quiz';
 
 const FALLBACK_QUIZ: QuizDefinition = {
@@ -32,7 +33,7 @@ export default function App() {
   const [wasAlreadyCompleted, setWasAlreadyCompleted] = useState<boolean>(false);
 
   const refreshActiveQuizFromServer = useCallback(() => {
-    fetch('/api/quizzes/active', { cache: 'no-store' })
+    apiFetch('/api/quizzes/active', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
         if (data?.quiz) {

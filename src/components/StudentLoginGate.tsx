@@ -12,6 +12,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { svgIllustrations } from '../data/questions';
+import { apiFetch } from '../utils/apiFallback';
 import type { QuizDefinition, StudentSubmission } from '../types/quiz';
 
 interface StudentLoginGateProps {
@@ -41,7 +42,7 @@ export const StudentLoginGate: React.FC<StudentLoginGateProps> = ({
   );
 
   useEffect(() => {
-    fetch('/api/quizzes/active', { cache: 'no-store' })
+    apiFetch('/api/quizzes/active', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
         if (data?.quiz) {
@@ -89,7 +90,7 @@ export const StudentLoginGate: React.FC<StudentLoginGateProps> = ({
 
       setLoading(true);
       try {
-        const res = await fetch('/api/auth/admin', {
+        const res = await apiFetch('/api/auth/admin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -127,7 +128,7 @@ export const StudentLoginGate: React.FC<StudentLoginGateProps> = ({
 
     setLoading(true);
     try {
-      const response = await fetch('/api/auth/student', {
+      const response = await apiFetch('/api/auth/student', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

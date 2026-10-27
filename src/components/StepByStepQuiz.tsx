@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, ChevronLeft, Send, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { ARABIC_LETTERS } from '../data/questions';
+import { apiFetch } from '../utils/apiFallback';
 import type { QuizDefinition, StudentSubmission } from '../types/quiz';
 
 interface StepByStepQuizProps {
@@ -81,7 +82,7 @@ export const StepByStepQuiz: React.FC<StepByStepQuizProps> = ({
     setSubmitError(null);
 
     try {
-      const response = await fetch('/api/submissions', {
+      const response = await apiFetch('/api/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
