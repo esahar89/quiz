@@ -89,8 +89,17 @@ export const StepByStepQuiz: React.FC<StepByStepQuizProps> = ({
           studentId,
           studentName,
           quizId: quiz.id,
+          quizTitle: quiz.title,
           selectedOptions: selectedOptions as number[],
-          durationSeconds: Math.max(1, elapsedSeconds)
+          durationSeconds: Math.max(1, elapsedSeconds),
+          quizQuestions: quiz.questions.map((q) => ({
+            id: q.id,
+            question: q.question,
+            caption: q.caption,
+            options: q.options,
+            correct: q.correct,
+            explanation: q.explanation
+          }))
         })
       });
 

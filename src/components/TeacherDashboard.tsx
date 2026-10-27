@@ -154,16 +154,28 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   };
 
   const handleSeedSample = async () => {
-    await apiFetch('/api/dashboard/seed', { method: 'POST' });
+    await apiFetch('/api/dashboard/seed', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quizId: viewedQuiz?.id || '' })
+    });
     fetchDashboard();
   };
 
   const quizzes: QuizDefinition[] = data?.quizzes || [];
   const activeQuiz = quizzes.find((q) => q.id === data?.activeQuizId) || quizzes[0];
+  const isViewingAllQuizzes = (selectedQuizId || data?.selectedQuizId) === 'all';
   const viewedQuiz =
     quizzes.find((q) => q.id === (selectedQuizId || data?.selectedQuizId)) ||
     activeQuiz;
   const viewedQuestions = viewedQuiz?.questions || QUIZ_QUESTIONS;
+  const studentModalQuestions = selectedStudent
+    ? quizzes.find(
+        (q) =>
+          q.id === selectedStudent.quizId ||
+          q.questions.length === selectedStudent.totalQuestions
+      )?.questions || viewedQuestions
+    : viewedQuestions;
 
   const handleExportCSV = () => {
     if (!data || data.submissions.length === 0) return;
@@ -490,10 +502,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           <div className="flex items-center gap-2 text-xs">
             <span className="text-slate-400 font-bold">عرض نتائج كويز:</span>
             <select
-              value={viewedQuiz?.id || ''}
+              value={isViewingAllQuizzes ? 'all' : viewedQuiz?.id || ''}
               onChange={(e) => handleSelectQuizForView(e.target.value)}
               className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-cyan-300"
             >
+              <option value="all">
+                جميع الكويزات — كل النتائج المسجلة ({data?.dbMetadata.totalRecords ?? 0})
+              </option>
               {quizzes.map((q, idx) => (
                 <option key={q.id} value={q.id}>
                   {idx + 1}. {q.title} {q.id === data?.activeQuizId ? '(نشط للطلاب ✓)' : ''}
@@ -732,15 +747,22 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               <p className="text-xs text-slate-400 mb-4">
                 عند قيام أي طالب بتسجيل الدخول برقمه وإنهاء هذا الكويز، ستظهر نتيجته هنا تلقائياً.
               </p>
-              {viewedQuiz?.id === quizzes[0]?.id && (
+              <div className="flex flex-wrap items-center justify-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => handleSelectQuizForView('all')}
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition"
+                >
+                  عرض جميع نتائج الطلاب لكل الكويزات ({data?.dbMetadata.totalRecords ?? 0})
+                </button>
                 <button
                   type="button"
                   onClick={handleSeedSample}
                   className="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold transition"
                 >
-                  إضافة سجلات طلاب تجريبية للمعاينة
+                  إضافة سجلات طلاب تجريبية لهذا الكويز
                 </button>
-              )}
+              </div>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -749,6 +771,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   <tr className="border-b border-slate-700 text-xs text-slate-400">
                     <th className="py-3 px-3 font-bold">رقم الطالب</th>
                     <th className="py-3 px-3 font-bold">اسم الطالب</th>
+                    <th className="py-3 px-3 font-bold">الكويز</th>
                     <th className="py-3 px-3 font-bold">الدرجة</th>
                     <th className="py-3 px-3 font-bold">النسبة المئوية</th>
                     <th className="py-3 px-3 font-bold">التقدير</th>
@@ -768,6 +791,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                       </td>
                       <td className="py-3.5 px-3 font-bold text-white">
                         {sub.studentName}
+                      </td>
+                      <td className="py-3.5 px-3 text-xs font-bold text-slate-300 max-w-[200px] truncate">
+                        {sub.quizTitle || viewedQuiz?.title}
                       </td>
                       <td className="py-3.5 px-3 font-mono-tabular font-extrabold text-slate-100">
                         {sub.score} / {sub.totalQuestions}
@@ -1173,7 +1199,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
             {/* Modal Body */}
             <div className="p-5 overflow-y-auto space-y-3">
-              {viewedQuestions.map((q) => {
+              {studentModalQuestions.map((q) => {
                 const ans = selectedStudent.answers.find((a) => a.questionId === q.id);
                 const pickedIdx = ans ? ans.selectedOption : -1;
                 const isCorrect = pickedIdx === q.correct;

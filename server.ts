@@ -2,7 +2,12 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { QUIZ_QUESTIONS, evaluateGrade, svgIllustrations } from './src/data/questions.ts';
+import {
+  QUIZ_QUESTIONS,
+  RAW_NETWORKING_QUESTIONS,
+  evaluateGrade,
+  svgIllustrations
+} from './src/data/questions.ts';
 import { generateContextualQuestionSvg } from './src/utils/contextualSvg.ts';
 import type {
   QuizDefinition,
@@ -21,6 +26,7 @@ const DATA_DIR = path.join(__dirname, 'data');
 const DB_FILE = path.join(DATA_DIR, 'quiz_database.json');
 
 const DEFAULT_QUIZ_ID = 'quiz-bios-uefi-1';
+const SECOND_QUIZ_ID = 'quiz-1793001254821-n01o7';
 const BIOS_SVG_SET = new Set(Object.values(svgIllustrations).map((s) => s.trim()));
 
 function sanitizeQuizIfPolluted(quiz: QuizDefinition): {
@@ -174,16 +180,40 @@ function buildDefaultQuiz(): QuizDefinition {
     title: 'اختبار BIOS و UEFI وأنواع الموصلات',
     description: 'مستوى سهل للمبتدئين · مدعم بالصور التوضيحية المباشرة (14 سؤالاً)',
     createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
-    isActive: true,
+    isActive: false,
     questions: QUIZ_QUESTIONS
   };
 }
 
-function buildSeedSubmissions(defaultQuiz: QuizDefinition): StudentSubmission[] {
-  const questions = defaultQuiz.questions;
+function buildNetworkingQuiz(): QuizDefinition {
+  const networkingQuestions: QuizQuestion[] = RAW_NETWORKING_QUESTIONS.map((q, idx) => {
+    const visual = generateContextualQuestionSvg(q.question, idx);
+    return {
+      id: q.id,
+      question: q.question,
+      svg: visual.svg,
+      caption: visual.caption,
+      options: q.options,
+      correct: q.correct,
+      explanation: q.explanation
+    };
+  });
+
+  return {
+    id: SECOND_QUIZ_ID,
+    title: 'اختبار الشبكات وأنظمة التشغيل وإدارة الخوادم (30 سؤالاً)',
+    description: 'اختبار تفاعلي شامل في الشبكات وأنظمة التشغيل وإدارة الخوادم مكون من 30 سؤالاً',
+    createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+    isActive: true,
+    questions: networkingQuestions
+  };
+}
+
+function buildSeedSubmissions(targetQuiz: QuizDefinition): StudentSubmission[] {
+  const questions = targetQuiz.questions;
   const sampleStudents = [
     {
-      id: 'sub-1001',
+      id: `sub-1001-${targetQuiz.id.slice(-4)}`,
       studentId: '44510231',
       studentName: 'عبدالله محمد العتيبي',
       durationSeconds: 315,
@@ -191,7 +221,7 @@ function buildSeedSubmissions(defaultQuiz: QuizDefinition): StudentSubmission[] 
       picked: questions.map((q, idx) => (idx === 11 ? 0 : q.correct))
     },
     {
-      id: 'sub-1002',
+      id: `sub-1002-${targetQuiz.id.slice(-4)}`,
       studentId: '44510248',
       studentName: 'ريان خالد الزهراني',
       durationSeconds: 410,
@@ -201,7 +231,7 @@ function buildSeedSubmissions(defaultQuiz: QuizDefinition): StudentSubmission[] 
       )
     },
     {
-      id: 'sub-1003',
+      id: `sub-1003-${targetQuiz.id.slice(-4)}`,
       studentId: '44510289',
       studentName: 'فهد سلطان القحطاني',
       durationSeconds: 280,
@@ -209,7 +239,7 @@ function buildSeedSubmissions(defaultQuiz: QuizDefinition): StudentSubmission[] 
       picked: questions.map((q) => q.correct)
     },
     {
-      id: 'sub-1004',
+      id: `sub-1004-${targetQuiz.id.slice(-4)}`,
       studentId: '44510315',
       studentName: 'نواف عبدالرحمن الحربي',
       durationSeconds: 495,
@@ -236,8 +266,8 @@ function buildSeedSubmissions(defaultQuiz: QuizDefinition): StudentSubmission[] 
     const { grade } = evaluateGrade(percentage);
     return {
       id: s.id,
-      quizId: defaultQuiz.id,
-      quizTitle: defaultQuiz.title,
+      quizId: targetQuiz.id,
+      quizTitle: targetQuiz.title,
       studentId: s.studentId,
       studentName: s.studentName,
       score,
@@ -256,13 +286,14 @@ function ensureDatabase(): DatabaseStore {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
   const defaultQuiz = buildDefaultQuiz();
+  const networkingQuiz = buildNetworkingQuiz();
 
   if (!fs.existsSync(DB_FILE)) {
     const initialStore: DatabaseStore = {
       version: 2,
       lastUpdated: new Date().toISOString(),
-      activeQuizId: defaultQuiz.id,
-      quizzes: [defaultQuiz],
+      activeQuizId: networkingQuiz.id,
+      quizzes: [defaultQuiz, networkingQuiz],
       submissions: buildSeedSubmissions(defaultQuiz)
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(initialStore, null, 2), 'utf-8');
@@ -275,14 +306,39 @@ function ensureDatabase(): DatabaseStore {
 
     let quizzes = Array.isArray(parsed.quizzes) && parsed.quizzes.length > 0
       ? parsed.quizzes
-      : [defaultQuiz];
-
-    let activeQuizId = parsed.activeQuizId || quizzes.find((q) => q.isActive)?.id || quizzes[0].id;
-    if (!quizzes.some((q) => q.id === activeQuizId)) {
-      activeQuizId = quizzes[0].id;
-    }
+      : [defaultQuiz, networkingQuiz];
 
     let anyModified = false;
+
+    // Ensure Quiz 1 (BIOS) and Quiz 2 (Networking 30Q) are always present even if DB_FILE was reset earlier
+    if (!quizzes.some((q) => q.id === defaultQuiz.id)) {
+      quizzes.unshift(defaultQuiz);
+      anyModified = true;
+    }
+    const hasNetworkingQuiz = quizzes.some(
+      (q) => q.id === networkingQuiz.id || q.questions.length === 30
+    );
+    if (!hasNetworkingQuiz) {
+      quizzes.push(networkingQuiz);
+      anyModified = true;
+    }
+
+    let activeQuizId =
+      parsed.activeQuizId ||
+      quizzes.find((q) => q.isActive)?.id ||
+      networkingQuiz.id;
+
+    // If the DB only had Quiz 1 before we restored Quiz 2, make Quiz 2 active as the teacher configured
+    if (!hasNetworkingQuiz && activeQuizId === defaultQuiz.id) {
+      activeQuizId = networkingQuiz.id;
+      anyModified = true;
+    }
+
+    if (!quizzes.some((q) => q.id === activeQuizId)) {
+      activeQuizId = quizzes[quizzes.length - 1].id;
+      anyModified = true;
+    }
+
     quizzes = quizzes.map((q) => {
       const { quiz: cleaned, modified } = sanitizeQuizIfPolluted(q);
       if (modified) anyModified = true;
@@ -293,10 +349,12 @@ function ensureDatabase(): DatabaseStore {
     });
 
     const submissions = (Array.isArray(parsed.submissions) ? parsed.submissions : []).map((sub) => {
-      const matchedQuiz = quizzes.find((q) => q.id === sub.quizId);
+      const matchedQuiz =
+        quizzes.find((q) => q.id === sub.quizId) ||
+        quizzes.find((q) => q.questions.length === sub.totalQuestions);
       return {
         ...sub,
-        quizId: sub.quizId || defaultQuiz.id,
+        quizId: matchedQuiz?.id || sub.quizId || defaultQuiz.id,
         quizTitle: matchedQuiz?.title || sub.quizTitle || defaultQuiz.title
       };
     });
@@ -318,8 +376,8 @@ function ensureDatabase(): DatabaseStore {
     const fallbackStore: DatabaseStore = {
       version: 2,
       lastUpdated: new Date().toISOString(),
-      activeQuizId: defaultQuiz.id,
-      quizzes: [defaultQuiz],
+      activeQuizId: networkingQuiz.id,
+      quizzes: [defaultQuiz, networkingQuiz],
       submissions: []
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(fallbackStore, null, 2), 'utf-8');
@@ -436,8 +494,12 @@ async function startServer() {
   app.post('/api/submissions', (req, res) => {
     const studentId = normalizeStudentId(req.body?.studentId);
     const studentName = String(req.body?.studentName || '').trim();
-    const quizId = String(req.body?.quizId || '');
+    const quizId = String(req.body?.quizId || '').trim();
+    const quizTitle = String(req.body?.quizTitle || '').trim();
     const selectedOptions = req.body?.selectedOptions as number[];
+    const incomingQuestions = Array.isArray(req.body?.quizQuestions)
+      ? req.body.quizQuestions
+      : null;
     const durationSeconds = Math.max(1, Number(req.body?.durationSeconds) || 60);
 
     if (!studentId || !studentName) {
@@ -445,11 +507,88 @@ async function startServer() {
       return;
     }
 
-    const db = ensureDatabase();
-    const targetQuiz =
-      db.quizzes.find((q) => q.id === quizId) || getActiveQuiz(db);
+    if (!Array.isArray(selectedOptions) || selectedOptions.length === 0) {
+      res.status(400).json({ error: 'لم يتم استلام إجابات الاختبار.' });
+      return;
+    }
 
-    if (!Array.isArray(selectedOptions) || selectedOptions.length !== targetQuiz.questions.length) {
+    const db = ensureDatabase();
+
+    // 1. Find exact quiz by ID
+    let targetQuiz = db.quizzes.find((q) => q.id === quizId);
+
+    // 2. Fallback: match by title + question count
+    if (!targetQuiz && quizTitle) {
+      targetQuiz = db.quizzes.find(
+        (q) =>
+          q.title.trim() === quizTitle &&
+          q.questions.length === selectedOptions.length
+      );
+    }
+
+    // 3. Fallback: match by question count (e.g. 30-question Networking quiz vs 14-question BIOS quiz)
+    if (!targetQuiz) {
+      targetQuiz = db.quizzes.find(
+        (q) => q.questions.length === selectedOptions.length
+      );
+    }
+
+    // 4. Fallback: if client sent quizQuestions snapshot (e.g. custom quiz after container restart), auto-register it
+    if (
+      !targetQuiz &&
+      incomingQuestions &&
+      incomingQuestions.length === selectedOptions.length
+    ) {
+      const cleanQuestions: QuizQuestion[] = incomingQuestions.map(
+        (q: any, idx: number) => {
+          const questionText = String(q.question || '').trim();
+          const visual = generateContextualQuestionSvg(questionText, idx);
+          return {
+            id: idx + 1,
+            question: questionText,
+            svg: String(q.svg || visual.svg),
+            caption: String(q.caption || visual.caption).trim(),
+            options: [
+              String(q.options?.[0] ?? ''),
+              String(q.options?.[1] ?? ''),
+              String(q.options?.[2] ?? ''),
+              String(q.options?.[3] ?? '')
+            ],
+            correct:
+              typeof q.correct === 'number' && q.correct >= 0 && q.correct <= 3
+                ? q.correct
+                : 0,
+            explanation: String(q.explanation || '').trim()
+          };
+        }
+      );
+
+      const recoveredQuiz: QuizDefinition = {
+        id: quizId || `quiz-${Date.now()}-recovered`,
+        title:
+          quizTitle ||
+          `اختبار تفاعلي (${cleanQuestions.length} سؤالاً)`,
+        description: `اختبار تفاعلي مكون من ${cleanQuestions.length} سؤالاً`,
+        createdAt: new Date().toISOString(),
+        isActive: true,
+        questions: cleanQuestions
+      };
+
+      db.quizzes.push(recoveredQuiz);
+      db.activeQuizId = recoveredQuiz.id;
+      db.quizzes = db.quizzes.map((q) => ({
+        ...q,
+        isActive: q.id === recoveredQuiz.id
+      }));
+      targetQuiz = recoveredQuiz;
+    }
+
+    // 5. Final fallback to active quiz
+    if (!targetQuiz) {
+      targetQuiz = getActiveQuiz(db);
+    }
+
+    if (selectedOptions.length !== targetQuiz.questions.length) {
       res.status(400).json({
         error: `يرجى الإجابة على جميع الأسئلة الـ ${targetQuiz.questions.length} قبل التسليم.`
       });
@@ -458,7 +597,7 @@ async function startServer() {
 
     const existing = db.submissions.find(
       (s) =>
-        s.quizId === targetQuiz.id &&
+        s.quizId === targetQuiz!.id &&
         s.studentId.toLowerCase() === studentId.toLowerCase()
     );
 
@@ -548,6 +687,21 @@ async function startServer() {
             : 0,
         explanation: String(q.explanation || '').trim()
       }));
+
+      // Check if an identical quiz (same title & question count) already exists to avoid duplicate IDs
+      const existingQuiz = db.quizzes.find(
+        (q) =>
+          q.title.trim() === title &&
+          q.questions.length === cleanQuestions.length
+      );
+
+      if (existingQuiz) {
+        existingQuiz.questions = cleanQuestions;
+        existingQuiz.description =
+          description || `اختبار تفاعلي مكون من ${cleanQuestions.length} سؤالاً`;
+        createdQuizzes.push(existingQuiz);
+        continue;
+      }
 
       const newQuiz: QuizDefinition = {
         id: `quiz-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -688,13 +842,23 @@ async function startServer() {
   app.get('/api/dashboard', (req, res) => {
     const db = ensureDatabase();
     const requestedQuizId = String(req.query.quizId || '').trim();
+    const viewAllQuizzes = requestedQuizId === 'all';
 
     const selectedQuiz =
       db.quizzes.find((q) => q.id === requestedQuizId) || getActiveQuiz(db);
 
-    const quizSubmissions = db.submissions
-      .filter((s) => s.quizId === selectedQuiz.id)
-      .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+    const quizSubmissions = (
+      viewAllQuizzes
+        ? db.submissions
+        : db.submissions.filter(
+            (s) =>
+              s.quizId === selectedQuiz.id ||
+              (s.totalQuestions === selectedQuiz.questions.length &&
+                s.quizTitle === selectedQuiz.title)
+          )
+    ).sort(
+      (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+    );
 
     const totalStudents = quizSubmissions.length;
     const maxPossibleScore = selectedQuiz.questions.length;
@@ -719,11 +883,17 @@ async function startServer() {
           )
         : 0;
 
+    const strictSelectedSubmissions = db.submissions.filter(
+      (s) =>
+        s.quizId === selectedQuiz.id ||
+        s.totalQuestions === selectedQuiz.questions.length
+    );
+
     const questionAnalytics: QuestionAnalyticsItem[] = selectedQuiz.questions.map((q) => {
       const optionCounts: [number, number, number, number] = [0, 0, 0, 0];
       let correctCount = 0;
 
-      quizSubmissions.forEach((sub) => {
+      strictSelectedSubmissions.forEach((sub) => {
         const ans = sub.answers.find((a) => a.questionId === q.id);
         if (ans && ans.selectedOption >= 0 && ans.selectedOption <= 3) {
           optionCounts[ans.selectedOption]++;
@@ -733,14 +903,15 @@ async function startServer() {
         }
       });
 
+      const attemptsForQuestion = strictSelectedSubmissions.length;
       const correctRate =
-        totalStudents > 0 ? Math.round((correctCount / totalStudents) * 100) : 0;
+        attemptsForQuestion > 0 ? Math.round((correctCount / attemptsForQuestion) * 100) : 0;
 
       return {
         questionId: q.id,
         questionText: q.question,
         correctOptionIndex: q.correct,
-        totalAttempts: totalStudents,
+        totalAttempts: attemptsForQuestion,
         correctCount,
         correctRate,
         optionCounts
@@ -757,7 +928,7 @@ async function startServer() {
     const payload: DashboardPayload = {
       quizzes: db.quizzes,
       activeQuizId: db.activeQuizId,
-      selectedQuizId: selectedQuiz.id,
+      selectedQuizId: viewAllQuizzes ? 'all' : selectedQuiz.id,
       submissions: quizSubmissions,
       stats: {
         totalStudents,
@@ -813,10 +984,12 @@ async function startServer() {
   });
 
   // 9. Reset / Re-seed sample data for demonstration if empty
-  app.post('/api/dashboard/seed', (_req, res) => {
+  app.post('/api/dashboard/seed', (req, res) => {
     const db = ensureDatabase();
-    const defaultQuiz = db.quizzes[0] || buildDefaultQuiz();
-    const seeds = buildSeedSubmissions(defaultQuiz);
+    const targetQuizId = String(req.body?.quizId || '').trim();
+    const targetQuiz =
+      db.quizzes.find((q) => q.id === targetQuizId) || getActiveQuiz(db);
+    const seeds = buildSeedSubmissions(targetQuiz);
     seeds.forEach((seed) => {
       if (
         !db.submissions.some(

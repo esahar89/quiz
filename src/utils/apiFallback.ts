@@ -243,11 +243,25 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
   if (pathname === '/api/submissions' && method === 'POST') {
     const studentId = normalizeStudentId(body?.studentId);
     const studentName = String(body?.studentName || '').trim();
-    const quizId = String(body?.quizId || '');
+    const quizId = String(body?.quizId || '').trim();
+    const quizTitle = String(body?.quizTitle || '').trim();
     const selectedOptions = body?.selectedOptions as number[];
     const durationSeconds = Math.max(1, Number(body?.durationSeconds) || 60);
 
-    const targetQuiz = db.quizzes.find((q) => q.id === quizId) || getActiveQuiz(db);
+    let targetQuiz = db.quizzes.find((q) => q.id === quizId);
+    if (!targetQuiz && quizTitle) {
+      targetQuiz = db.quizzes.find(
+        (q) =>
+          q.title.trim() === quizTitle &&
+          q.questions.length === selectedOptions.length
+      );
+    }
+    if (!targetQuiz) {
+      targetQuiz =
+        db.quizzes.find((q) => q.questions.length === selectedOptions.length) ||
+        getActiveQuiz(db);
+    }
+
     const existing = db.submissions.find(
       (s) =>
         s.quizId === targetQuiz.id && s.studentId.toLowerCase() === studentId.toLowerCase()
@@ -411,9 +425,17 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
   // GET /api/dashboard
   if (pathname === '/api/dashboard' && method === 'GET') {
     const requestedQuizId = url.searchParams.get('quizId') || '';
+    const viewAllQuizzes = requestedQuizId === 'all';
     const selectedQuiz =
       db.quizzes.find((q) => q.id === requestedQuizId) || getActiveQuiz(db);
-    const quizSubmissions = db.submissions.filter((s) => s.quizId === selectedQuiz.id);
+    const quizSubmissions = viewAllQuizzes
+      ? db.submissions
+      : db.submissions.filter(
+          (s) =>
+            s.quizId === selectedQuiz.id ||
+            (s.totalQuestions === selectedQuiz.questions.length &&
+              s.quizTitle === selectedQuiz.title)
+        );
     const totalStudents = quizSubmissions.length;
     const maxPossibleScore = selectedQuiz.questions.length;
     const averageScore =
@@ -467,7 +489,7 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
     const payload: DashboardPayload = {
       quizzes: db.quizzes,
       activeQuizId: db.activeQuizId,
-      selectedQuizId: selectedQuiz.id,
+      selectedQuizId: viewAllQuizzes ? 'all' : selectedQuiz.id,
       submissions: quizSubmissions,
       stats: {
         totalStudents,
