@@ -586,27 +586,319 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
   }
 ];
 
+const RAW_NETWORKING_QUESTIONS: Array<{
+  id: number;
+  question: string;
+  options: [string, string, string, string];
+  correct: number;
+  explanation: string;
+}> = [
+  {
+    id: 1,
+    question: "ما هو القناع الافتراضي (Default Subnet Mask) لفئة العناوين Class C في IPv4؟",
+    options: ["255.0.0.0", "255.255.255.0", "255.255.0.0", "255.255.255.255"],
+    correct: 1,
+    explanation: "قناع الفئة C الافتراضي هو 255.255.255.0 (/24)، حيث يخصص أول 3 خانات (24 بت) للشبكة والخانة الأخيرة (8 بت) للأجهزة."
+  },
+  {
+    id: 2,
+    question: "ما هي الوظيفة الأساسية لخادم الـ DNS في الشبكة؟",
+    options: [
+      "توزيع عناوين IP تلقائياً على الأجهزة",
+      "تشفير حركة البيانات بين السيرفر والمستخدم",
+      "تحويل أسماء النطاقات (Domain Names) إلى عناوين IP والعكس",
+      "حظر الفيروسات والبرمجيات الخبيثة"
+    ],
+    correct: 2,
+    explanation: "يقوم خادم DNS (Domain Name System) بترجمة الأسماء المفهومة للبشر (مثل google.com) إلى عناوين IP رقمية."
+  },
+  {
+    id: 3,
+    question: "ما هي المراحل الأربع الصحيحة لعملية الحصول على عنوان IP من خادم DHCP (DORA)؟",
+    options: [
+      "Discover - Offer - Request - Acknowledge",
+      "Detect - Open - Receive - Allow",
+      "DNS - OSI - Router - Access",
+      "Disconnect - Offline - Reset - Apply"
+    ],
+    correct: 0,
+    explanation: "تسلسل DORA: Discover (استكشاف)، Offer (عرض)، Request (طلب)، Acknowledge (تأكيد)."
+  },
+  {
+    id: 4,
+    question: "ما الذي يميز أقراص NVMe SSD عن أقراص SATA SSD التقليدية؟",
+    options: [
+      "تعتمد على أقراص مغناطيسية دوارة",
+      "مخصصة فقط لأجهزة الماك القديمة",
+      "تستهلك طاقة أعلى ولا تدعم نظام UEFI",
+      "تتصل عبر ممر PCIe مباشرة مما يوفر سرعات قراءة وكتابة أعلى بكثير"
+    ],
+    correct: 3,
+    explanation: "تستخدم أقراص NVMe واجهة PCIe فائقة السرعة متجاوزة عنق زجاجة منفذ SATA (الذي يتوقف عند حدود 600MB/s)."
+  },
+  {
+    id: 5,
+    question: "ما هو نظام الملفات الموصى به والافتراضي لتثبيت نظام Windows الحديث والذي يدعم صلاحيات الأمان وضغط الملفات؟",
+    options: ["FAT32", "NTFS", "exFAT", "ext4"],
+    correct: 1,
+    explanation: "نظام NTFS هو المعيار لأنظمة ويندوز لما يوفره من ميزات أمان (ACL Permissions) وتشفير EFS وضغط الملفات."
+  },
+  {
+    id: 6,
+    question: "ما هو الحد الأقصى لحجم الملف الفردي الذي يمكن حفظه على وحدة تخزين بنظام الملفات FAT32؟",
+    options: ["2 GB", "غير محدود", "16 GB", "4 GB"],
+    correct: 3,
+    explanation: "نظام FAT32 لا يستطيع تخزين أي ملف منفرد يتجاوز حجمه 4 جيجابايت."
+  },
+  {
+    id: 7,
+    question: "في أي طبقة من طبقات نموذج OSI السبع يعمل جهاز التوجيه (Router)؟",
+    options: [
+      "Layer 1 - Physical Layer",
+      "Layer 2 - Data Link Layer",
+      "Layer 3 - Network Layer",
+      "Layer 4 - Transport Layer"
+    ],
+    correct: 2,
+    explanation: "يعمل الراوتر في الطبقة الثالثة (Network Layer) حيث يوجه الحزم (Packets) بناءً على عناوين IP."
+  },
+  {
+    id: 8,
+    question: "ما هي الوحدة البيانية الأساسية (PDU) في طبقة النقل (Transport Layer) عند استخدام بروتوكول TCP؟",
+    options: ["Segment", "Frame", "Packet", "Bit"],
+    correct: 0,
+    explanation: "الوحدة في الطبقة الرابعة (TCP) تسمى Segment (أو Datagram في UDP)."
+  },
+  {
+    id: 9,
+    question: "ما هو رقم المنفذ الافتراضي (Port) المستخدم في بروتوكول الاتصال الآمن بسطح المكتب البعيد RDP؟",
+    options: ["22", "80", "443", "3389"],
+    correct: 3,
+    explanation: "المنفذ الافتراضي لخدمة Remote Desktop Protocol (RDP) هو 3389."
+  },
+  {
+    id: 10,
+    question: "ما هو البروتوكول الآمن والمشفر المستخدم لإدارة أجهزة السيرفر والشبكة عبر سطر الأوامر (CLI) ويعمل على المنفذ 22؟",
+    options: ["Telnet", "SSH", "FTP", "HTTP"],
+    correct: 1,
+    explanation: "بروتوكول SSH (Secure Shell) يوفر اتصالاً مشفراً على المنفذ 22 لإدارة الأجهزة عن بُعد بدلاً من Telnet غير المشفر."
+  },
+  {
+    id: 11,
+    question: "ما الميزة الرئيسية لتقنية UEFI مقارنة بـ BIOS التقليدي؟",
+    options: [
+      "دعم تقسيم GPT وسعات أقراص تتجاوز 2TB مع خاصية Secure Boot",
+      "الاعتماد الكامل على نمط MBR فقط",
+      "العمل فقط في بيئة 16-bit القديمة",
+      "إلغاء الحاجة لكلمة مرور النظام"
+    ],
+    correct: 0,
+    explanation: "يوفر UEFI واجهة حديثة، دعماً لأقراص ضخمة تتجاوز 2 تيرابايت عبر GPT، وأمان الإقلاع Secure Boot."
+  },
+  {
+    id: 12,
+    question: "ما هو الحد الأقصى لعدد الأقسام الأساسية (Primary Partitions) التي يدعمها نمط التقسيم MBR؟",
+    options: ["2", "8", "4", "128"],
+    correct: 2,
+    explanation: "يدعم MBR بحد أقصى 4 أقسام رئيسية (Primary Partitions) بينما يدعم GPT حتى 128 قسماً في ويندوز."
+  },
+  {
+    id: 13,
+    question: "ما هو الأمر المستخدم في موجه أوامر ويندوز (CMD) لمسح وإعادة تنشيط كاش الـ DNS؟",
+    options: ["ipconfig /all", "ipconfig /flushdns", "netstat -ano", "nslookup -clean"],
+    correct: 1,
+    explanation: "الأمر ipconfig /flushdns يمسح الذاكرة المخبأة لعناوين DNS المخزنة على الجهاز لحل مشاكل تصفح المواقع."
+  },
+  {
+    id: 14,
+    question: "ما هو الأمر المستخدم لفحص واختبار المسار الكامل لحزم البيانات عبر الراوترات حتى تصل للهدف؟",
+    options: ["ping", "route print", "arp -a", "tracert"],
+    correct: 3,
+    explanation: "الأمر tracert (أو traceroute في لينكس) يتتبع مسار الحزم عبر القفزات (Hops) ويعرض زمن استجابة كل راوتر."
+  },
+  {
+    id: 15,
+    question: "في نظام Linux، ما هو الأمر المستخدم لتغيير صلاحيات الملفات والمجلدات؟",
+    options: ["chown", "chmod", "mkdir", "ps aux"],
+    correct: 1,
+    explanation: "الأمر chmod (Change Mode) يستخدم لتعديل صلاحيات القراءة (r) والكتابة (w) والتنفيذ (x)."
+  },
+  {
+    id: 16,
+    question: "ما هو الأمر الذي يعرض تفاصيل المساحة المستهلكة والمتبقية في أقراص التخزين بنظام Linux بشكل مقروء للبشر؟",
+    options: ["ls -la", "free -m", "df -h", "top"],
+    correct: 2,
+    explanation: "الأمر df -h (Disk Free - Human Readable) يعرض مساحات الأقراص بالجيجابايت والميجابايت بوضوح."
+  },
+  {
+    id: 17,
+    question: "ما هي الخدمة المسؤولة في نظام Windows عن إدارة طابور الطباعة وتجهيز المستندات للإرسال للطابعة؟",
+    options: ["Print Spooler", "Windows Update", "DHCP Client", "Task Scheduler"],
+    correct: 0,
+    explanation: "خدمة Print Spooler هي المسؤولة عن تنظيم وإرسال مهام الطباعة إلى الطابعات، وإعادة تشغيلها يحل مشكلة تعليق الطابور."
+  },
+  {
+    id: 18,
+    question: "عند إضافة طابعة شبكية يدوياً عبر الشبكة المحلية، ما هو المنفذ القياسي الشائع إضافته؟",
+    options: ["Bluetooth PAN", "COM1 Serial Port", "LPT1 Port", "Standard TCP/IP Port"],
+    correct: 3,
+    explanation: "يتم توصيل طابعات الشبكة عادة عبر عنوان IP الثابت الخاص بها باستخدام Standard TCP/IP Port."
+  },
+  {
+    id: 19,
+    question: "ما هي الخدمة الأساسية في Windows Server المسؤولة عن إدارة المستخدمين، المجموعات، وأجهزة الدومين مركزياً؟",
+    options: [
+      "Hyper-V",
+      "Active Directory Domain Services (AD DS)",
+      "Web Server (IIS)",
+      "Windows Server Update Services (WSUS)"
+    ],
+    correct: 1,
+    explanation: "تعد AD DS الخدمة الرئيسية لإدارة الهوية والوصول والموارد في بيئة الدومين."
+  },
+  {
+    id: 20,
+    question: "ما هو الشرط الأساسي الذي يجب ضبطه على كرت الشبكة لجهاز العميل ليتمكن من الانضمام إلى الدومين بنجاح؟",
+    options: [
+      "تثبيت برنامج مضاد فيروسات مجاني",
+      "تغيير اسم المستخدم إلى Administrator",
+      "تعطيل جدار الحماية بالكامل",
+      "وضع عنوان IP الخاص بخادم الـ Domain Controller كـ Preferred DNS Server"
+    ],
+    correct: 3,
+    explanation: "يجب توجيه خادم DNS الخاص بالعميل إلى خادم الدومين ليتمكن من الوصول لسجلات SRV الخاصة بـ Active Directory."
+  },
+  {
+    id: 21,
+    question: "إذا كان لدى مستخدم صلاحية Read على مستوى Share Permissions وصلاحية Modify على مستوى NTFS Permissions، فما الصلاحية الفعلية عند الوصول عبر الشبكة؟",
+    options: [
+      "Modify (الأكثر مرونة)",
+      "Full Control",
+      "Read (الأكثر تقييداً)",
+      "يُمنع من الوصول نهائياً"
+    ],
+    correct: 2,
+    explanation: "عند الوصول عبر الشبكة، تطبق القاعدة الأكثر تقييداً (Most Restrictive) بين صلاحيات المشاركة Share وصلاحيات NTFS."
+  },
+  {
+    id: 22,
+    question: "ما الذي يحدث عند إضافة علامة الدولار ($) في نهاية اسم المجلد المشترك (مثال: Data$)؟",
+    options: [
+      "يصبح مجلد مشاركة مخفي (Hidden Share) لا يظهر عند استعراض الشبكة",
+      "يصبح المجلد مشفراً تلقائياً بواسطة BitLocker",
+      "يتم منح صلاحية Full Control للجميع فوراً",
+      "يتم حذف المجلد عند إعادة تشغيل السيرفر"
+    ],
+    correct: 0,
+    explanation: "علامة $ تجعل مجلد المشاركة مخفياً (Hidden Share) ويمكن الوصول إليه فقط بكتابة المسار المباشر مثل \\\\Server\\Data$."
+  },
+  {
+    id: 23,
+    question: "ما هي الوظيفة الأساسية للوحة التوزيع (Patch Panel) في كابينة الشبكة (Rack)؟",
+    options: [
+      "توزيع عناوين IP وتوجيه الحزم بين الشبكات المختلفة",
+      "حظر هجمات حجب الخدمة DDoS",
+      "تزويد السيرفرات بالطاقة الكهربائية الاحتياطية",
+      "تنظيم وتجميع كابلات الشبكة القادمة من النقاط الجدارية وتسهيل صيانتها وتوصيلها بالسويتش"
+    ],
+    correct: 3,
+    explanation: "تستخدم الـ Patch Panel لتنظيم إنهاء الكابلات الهيكلية وحمايتها من التلف وتسهيل التوصيل بالسويتشات عبر Patch Cords."
+  },
+  {
+    id: 24,
+    question: "ما هو الترتيب اللوني القياسي الشائع لكابلات الشبكة وفق المعيار T568B من اليسار لليمين؟",
+    options: [
+      "أبيض أخضر، أخضر، أبيض برتقالي، أزرق، أبيض أزرق، برتقالي، أبيض بني، بني",
+      "أبيض برتقالي، برتقالي، أبيض أخضر، أزرق، أبيض أزرق، أخضر، أبيض بني، بني",
+      "أبيض بني، بني، أبيض أزرق، أزرق، أبيض أخضر، أخضر، أبيض برتقالي، برتقالي",
+      "أزرق، أبيض أزرق، برتقالي، أبيض برتقالي، أخضر، أبيض أخضر، بني، أبيض بني"
+    ],
+    correct: 1,
+    explanation: "المعيار T568B يبدأ من الدبوس 1 إلى 8: أبيض برتقالي، برتقالي، أبيض أخضر، أزرق، أبيض أزرق، أخضر، أبيض بني، بني."
+  },
+  {
+    id: 25,
+    question: "في أي طبقة من نموذج OSI يعمل السويتش غير المدار (Unmanaged Switch) التقليدي؟",
+    options: [
+      "Layer 2 - Data Link (بناءً على عناوين MAC)",
+      "Layer 1 - Physical",
+      "Layer 3 - Network",
+      "Layer 7 - Application"
+    ],
+    correct: 0,
+    explanation: "يعمل السويتش التقليدي في الطبقة الثانية (Data Link Layer) ويوجه الإطارات (Frames) بناءً على جدول MAC Address."
+  },
+  {
+    id: 26,
+    question: "ما هو برنامج الـ Type-1 Hypervisor (Bare-Metal) الذي يتم تثبيته مباشرة على العتاد المادي بدون نظام تشغيل وسيط؟",
+    options: ["Oracle VirtualBox", "VMware Workstation", "VMware ESXi", "Windows Sandbox"],
+    correct: 2,
+    explanation: "برنامج VMware ESXi و Microsoft Hyper-V Server هما Type-1 Hypervisors يعملان على الهاردوير مباشرة في مراكز البيانات."
+  },
+  {
+    id: 27,
+    question: "ما هو البروتوكول المسؤول عن إرسال رسائل البريد الإلكتروني بين الخوادم؟",
+    options: ["IMAP", "SMTP", "POP3", "SNMP"],
+    correct: 1,
+    explanation: "بروتوكول SMTP (Simple Mail Transfer Protocol) مخصص لإرسال وتمرير رسائل البريد، بينما IMAP و POP3 لاستقبالها."
+  },
+  {
+    id: 28,
+    question: "ما هو الأمر المستخدم لفرض تطبيق سياسات المجموعة (Group Policy) فورياً على جهاز العميل دون انتظار أو إعادة تشغيل؟",
+    options: ["sfc /scannow", "gpresult /r", "netsh advfirewall reset", "gpupdate /force"],
+    correct: 3,
+    explanation: "الأمر gpupdate /force يقوم بتحديث وتطبيق سياسات GPO المعدلة على الفور."
+  },
+  {
+    id: 29,
+    question: "ما هي الوحدة التنظيمية داخل Active Directory المستخدمة لترتيب المستخدمين والأجهزة وتطبيق سياسات Group Policy عليها؟",
+    options: [
+      "Security Group",
+      "Organizational Unit (OU)",
+      "Domain Tree",
+      "Distribution Group"
+    ],
+    correct: 1,
+    explanation: "الـ OU (Organizational Unit) هي الحاوية التنظيمية التي يمكن ربط كائنات GPO بها مباشرة وتفويض الصلاحيات عليها."
+  },
+  {
+    id: 30,
+    question: "في أي طبقة من نموذج OSI يتم تشفير وفك تشفير البيانات وضغطها (مثل SSL/TLS و JPEG)؟",
+    options: [
+      "Layer 7 - Application Layer",
+      "Layer 5 - Session Layer",
+      "Layer 6 - Presentation Layer",
+      "Layer 4 - Transport Layer"
+    ],
+    correct: 2,
+    explanation: "طبقة التقديم (Presentation Layer - Layer 6) مسؤولة عن التنسيق، التشفير وفك التشفير، وضغط البيانات."
+  }
+];
+
+export { RAW_NETWORKING_QUESTIONS };
+
 export function evaluateGrade(percentage: number): { grade: string; feedback: string } {
   if (percentage >= 85) {
     return {
       grade: "ممتاز",
-      feedback: "أداء رائع جداً! لقد أتقنت أساسيات BIOS و UEFI وأنواع الموصلات بامتياز."
+      feedback: "أداء رائع جداً! لقد أتقنت مفاهيم الاختبار بامتياز."
     };
   }
   if (percentage >= 70) {
     return {
       grade: "جيد جداً",
-      feedback: "مستوى جميل جداً! لديك معرفة أساسية قوية بمكونات الحاسوب والمنافذ."
+      feedback: "مستوى جميل جداً! لديك معرفة تقنية أساسية قوية."
     };
   }
   if (percentage >= 50) {
     return {
       grade: "مقبول",
-      feedback: "نتيجة مقبولة، يمكنك مراجعة التوضيحات العلمية بالأسفل لتعزيز فهمك لبعض الموصلات."
+      feedback: "نتيجة مقبولة، يمكنك مراجعة التوضيحات العلمية بالأسفل لتعزيز فهمك."
     };
   }
   return {
     grade: "يحتاج مراجعة",
-    feedback: "راجع الشروحات العلمية المرفقة تحت كل سؤال لتثبيت المعلومات الأساسية حول BIOS والموصلات."
+    feedback: "راجع الشروحات العلمية المرفقة تحت كل سؤال لتثبيت المعلومات الأساسية."
   };
 }
+

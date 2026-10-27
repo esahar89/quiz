@@ -1,5 +1,5 @@
-import initialDbJson from '../../data/quiz_database.json';
-import { QUIZ_QUESTIONS, evaluateGrade } from '../data/questions';
+import { QUIZ_QUESTIONS, RAW_NETWORKING_QUESTIONS, evaluateGrade } from '../data/questions';
+import { generateContextualQuestionSvg } from './contextualSvg';
 import type {
   QuizDefinition,
   QuizQuestion,
@@ -95,6 +95,40 @@ const DB_COLUMNS_SCHEMA: DatabaseColumnSchema[] = [
   }
 ];
 
+function buildInitialQuizzes(): QuizDefinition[] {
+  const networkingQuestions: QuizQuestion[] = RAW_NETWORKING_QUESTIONS.map((q, idx) => {
+    const visual = generateContextualQuestionSvg(q.question, idx);
+    return {
+      id: q.id,
+      question: q.question,
+      svg: visual.svg,
+      caption: visual.caption,
+      options: q.options,
+      correct: q.correct,
+      explanation: q.explanation
+    };
+  });
+
+  return [
+    {
+      id: 'quiz-bios-uefi-1',
+      title: 'اختبار BIOS و UEFI وأنواع الموصلات',
+      description: 'مستوى سهل للمبتدئين · مدعم بالصور التوضيحية المباشرة (14 سؤالاً)',
+      createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
+      isActive: false,
+      questions: QUIZ_QUESTIONS
+    },
+    {
+      id: 'quiz-1793001254821-n01o7',
+      title: 'اختبار الشبكات وأنظمة التشغيل وإدارة الخوادم (30 سؤالاً)',
+      description: 'اختبار تفاعلي مكون من 30 سؤالاً',
+      createdAt: new Date().toISOString(),
+      isActive: true,
+      questions: networkingQuestions
+    }
+  ];
+}
+
 function getLocalStore(): LocalDatabaseStore {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -108,25 +142,13 @@ function getLocalStore(): LocalDatabaseStore {
     // ignore
   }
 
-  const seed = initialDbJson as unknown as LocalDatabaseStore;
+  const initialQuizzes = buildInitialQuizzes();
   const fallbackStore: LocalDatabaseStore = {
     version: 2,
-    lastUpdated: seed.lastUpdated || new Date().toISOString(),
-    activeQuizId: seed.activeQuizId || seed.quizzes?.[0]?.id || 'quiz-bios-uefi-1',
-    quizzes:
-      Array.isArray(seed.quizzes) && seed.quizzes.length > 0
-        ? seed.quizzes
-        : [
-            {
-              id: 'quiz-bios-uefi-1',
-              title: 'اختبار BIOS و UEFI وأنواع الموصلات',
-              description: 'مستوى سهل للمبتدئين · مدعم بالصور التوضيحية المباشرة (14 سؤالاً)',
-              createdAt: new Date().toISOString(),
-              isActive: true,
-              questions: QUIZ_QUESTIONS
-            }
-          ],
-    submissions: Array.isArray(seed.submissions) ? seed.submissions : []
+    lastUpdated: new Date().toISOString(),
+    activeQuizId: 'quiz-1793001254821-n01o7',
+    quizzes: initialQuizzes,
+    submissions: []
   };
 
   saveLocalStore(fallbackStore);
