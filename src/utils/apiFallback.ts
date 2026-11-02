@@ -1,4 +1,5 @@
 import { QUIZ_QUESTIONS, RAW_NETWORKING_QUESTIONS, evaluateGrade } from '../data/questions';
+import { buildComptiaQuiz, THIRD_QUIZ_ID } from '../data/comptiaQuiz';
 import { generateContextualQuestionSvg } from './contextualSvg';
 import type {
   QuizDefinition,
@@ -10,7 +11,7 @@ import type {
   DatabaseColumnSchema
 } from '../types/quiz';
 
-const STORAGE_KEY = 'sahar_quiz_platform_db_v2';
+const STORAGE_KEY = 'sahar_quiz_platform_db_v3';
 
 interface LocalDatabaseStore {
   version: number;
@@ -121,11 +122,12 @@ function buildInitialQuizzes(): QuizDefinition[] {
     {
       id: 'quiz-1793001254821-n01o7',
       title: 'اختبار الشبكات وأنظمة التشغيل وإدارة الخوادم (30 سؤالاً)',
-      description: 'اختبار تفاعلي مكون من 30 سؤالاً',
-      createdAt: new Date().toISOString(),
-      isActive: true,
+      description: 'اختبار تفاعلي شامل في الشبكات وأنظمة التشغيل وإدارة الخوادم مكون من 30 سؤالاً',
+      createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+      isActive: false,
       questions: networkingQuestions
-    }
+    },
+    buildComptiaQuiz(true)
   ];
 }
 
@@ -135,6 +137,15 @@ function getLocalStore(): LocalDatabaseStore {
     if (raw) {
       const parsed = JSON.parse(raw) as LocalDatabaseStore;
       if (Array.isArray(parsed.quizzes) && parsed.quizzes.length > 0) {
+        if (!parsed.quizzes.some((q) => q.id === THIRD_QUIZ_ID)) {
+          parsed.quizzes.push(buildComptiaQuiz(true));
+          parsed.activeQuizId = THIRD_QUIZ_ID;
+          parsed.quizzes = parsed.quizzes.map((q) => ({
+            ...q,
+            isActive: q.id === THIRD_QUIZ_ID
+          }));
+          saveLocalStore(parsed);
+        }
         return parsed;
       }
     }
@@ -144,9 +155,9 @@ function getLocalStore(): LocalDatabaseStore {
 
   const initialQuizzes = buildInitialQuizzes();
   const fallbackStore: LocalDatabaseStore = {
-    version: 2,
+    version: 3,
     lastUpdated: new Date().toISOString(),
-    activeQuizId: 'quiz-1793001254821-n01o7',
+    activeQuizId: THIRD_QUIZ_ID,
     quizzes: initialQuizzes,
     submissions: []
   };

@@ -1,0 +1,2536 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>اختبار CompTIA IT Fundamentals (40 سؤالاً) - نظام التقييم وقاعدة البيانات</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Cairo & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            slate: {
+              850: '#131c31',
+              900: '#0f172a',
+              950: '#090d16',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #090d16;
+      color: #f1f5f9;
+      overflow-x: hidden;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #06b6d4;
+    }
+    .glass-card {
+      background: rgba(19, 28, 49, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+    }
+    .option-card {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .option-card:hover {
+      transform: translateX(-4px);
+    }
+    @keyframes pulse-border {
+      0%, 100% { border-color: rgba(6, 182, 212, 0.5); }
+      50% { border-color: rgba(6, 182, 212, 1); }
+    }
+    .active-pulse {
+      animation: pulse-border 2s infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-cyan-500 selection:text-slate-950">
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex flex-wrap items-center justify-between gap-4">
+      <!-- Brand / Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <i class="fa-solid fa-microchip text-white text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-bold text-white tracking-wide">CompTIA ITF+ <span class="text-cyan-400 font-mono-code text-sm">FC0-U61</span></h1>
+            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">40 سؤالاً</span>
+          </div>
+          <p class="text-xs text-slate-400">منصة الاختبارات التفاعلية المرتبطة بقاعدة بيانات <span class="font-mono-code text-amber-400">student_submissions</span></p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center gap-2 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800">
+        <button onclick="switchMainTab('quiz')" id="tab-btn-quiz" class="px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 bg-cyan-500 text-slate-950 shadow-md">
+          <i class="fa-solid fa-laptop-code"></i>
+          <span>بوابة الاختبار</span>
+        </button>
+        <button onclick="switchMainTab('database')" id="tab-btn-database" class="px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800/60">
+          <i class="fa-solid fa-database text-amber-400"></i>
+          <span>سجل النتائج و SQL</span>
+          <span id="db-count-badge" class="px-1.5 py-0.2 text-xs rounded-md bg-slate-800 text-cyan-400 font-mono-code">2</span>
+        </button>
+        <button onclick="switchMainTab('schema')" id="tab-btn-schema" class="px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800/60">
+          <i class="fa-solid fa-table-columns text-emerald-400"></i>
+          <span class="hidden sm:inline">هيكلية الجدول</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Toast Notification Banner -->
+  <div id="toast-container" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 max-w-md w-full pointer-events-none px-4"></div>
+
+  <!-- Main Content Container -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ==================== TAB 1: QUIZ PORTAL ==================== -->
+    <section id="section-quiz" class="space-y-6">
+
+      <!-- View 1A: Student Entry Screen -->
+      <div id="view-start" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Welcome & Registration Card -->
+        <div class="lg:col-span-7 glass-card rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+          <div class="absolute -top-24 -left-24 w-56 h-56 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-4">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>متوافق مع هيكلية قاعدة البيانات القياسية (SQL & JSONB)</span>
+          </div>
+
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mb-3 leading-snug">
+            اختبار CompTIA IT Fundamentals الشامل (40 سؤالاً)
+          </h2>
+          <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+            يغطي هذا الاختبار التفاعلي المفاهيم الأساسية لتقنية المعلومات، البنية التحتية والعتاد (Hardware)، المنافذ والموصلات، أنظمة التشغيل، البرمجة، قواعد البيانات، وأمن المعلومات، بمستوى <strong class="text-cyan-400">سهل إلى متوسط</strong> مع أسئلة مدعمة بالرسوم التوضيحية.
+          </p>
+
+          <!-- Registration Form -->
+          <form id="start-quiz-form" onsubmit="handleStartQuiz(event)" class="space-y-5 bg-slate-900/90 p-5 sm:p-6 rounded-xl border border-slate-800">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 class="text-base font-bold text-cyan-400 flex items-center gap-2">
+                <i class="fa-solid fa-user-graduate"></i>
+                <span>بيانات الطالب (بوابة الدخول)</span>
+              </h3>
+              <span class="text-xs font-mono-code text-slate-400">quiz_id: quiz-comptia-itf-40</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="input-student-name" class="block text-xs font-bold text-slate-300 mb-2">
+                  اسم الطالب الكامل <span class="text-cyan-400 font-mono-code">(student_name)</span> *
+                </label>
+                <div class="relative">
+                  <i class="fa-solid fa-user absolute right-3.5 top-3.5 text-slate-500 text-sm"></i>
+                  <input
+                    type="text"
+                    id="input-student-name"
+                    maxlength="120"
+                    required
+                    placeholder="مثال: أحمد محمد العلي"
+                    class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 rounded-xl pr-10 pl-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition"
+                  />
+                </div>
+                <span class="text-[11px] text-slate-500 mt-1 block">NVARCHAR(120) NOT NULL</span>
+              </div>
+
+              <div>
+                <label for="input-student-id" class="block text-xs font-bold text-slate-300 mb-2">
+                  الرقم التدريبي أو الجامعي <span class="text-cyan-400 font-mono-code">(student_id)</span> *
+                </label>
+                <div class="relative">
+                  <i class="fa-solid fa-id-card absolute right-3.5 top-3.5 text-slate-500 text-sm"></i>
+                  <input
+                    type="text"
+                    id="input-student-id"
+                    maxlength="32"
+                    required
+                    placeholder="مثال: STU-2026-104"
+                    class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 rounded-xl pr-10 pl-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition font-mono-code"
+                  />
+                </div>
+                <span class="text-[11px] text-emerald-400/80 mt-1 block">UNIQUE (quiz_id, student_id)</span>
+              </div>
+            </div>
+
+            <!-- Duplicate Warning Box (Hidden by default) -->
+            <div id="duplicate-warning" class="hidden p-4 rounded-xl bg-amber-500/10 border border-amber-500/40 text-amber-200 text-xs space-y-2">
+              <div class="flex items-start gap-2.5">
+                <i class="fa-solid fa-triangle-exclamation text-amber-400 text-base mt-0.5"></i>
+                <div>
+                  <p class="font-bold text-sm text-amber-300">تنبيه قيد الفهرسة: UNIQUE (quiz_id, student_id)</p>
+                  <p class="mt-1 leading-relaxed">هذا الرقم الجامعي قام بتقديم هذا الكويز مسبقاً. وفقاً لقيود الجدول لا يمكن تكرار نفس <span class="font-mono-code">student_id</span> لنفس الاختبار إلا في حال استبدال المحاولة السابقة.</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 pt-1">
+                <button type="button" onclick="forceStartWithOverwrite()" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition">
+                  تحديث المحاولة السابقة والبدء
+                </button>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                type="submit"
+                class="flex-1 min-w-[200px] py-3 px-6 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-extrabold text-base shadow-lg shadow-cyan-500/20 transition flex items-center justify-center gap-2"
+              >
+                <i class="fa-solid fa-play"></i>
+                <span>بدء الاختبار الآن (40 سؤالاً)</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="quickDemoSimulation()"
+                class="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 text-xs sm:text-sm font-bold transition flex items-center gap-2"
+                title="ملء إجابات تجريبية فورية لمعاينة النتيجة وأوامر SQL"
+              >
+                <i class="fa-solid fa-bolt"></i>
+                <span>تجربة سريعة وتوليد SQL فوري</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Quiz Specs Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+            <div class="bg-slate-900/70 border border-slate-800 p-3.5 rounded-xl text-center">
+              <div class="text-cyan-400 text-lg font-extrabold font-mono-code">40</div>
+              <div class="text-xs text-slate-400 mt-0.5">إجمالي الأسئلة</div>
+            </div>
+            <div class="bg-slate-900/70 border border-slate-800 p-3.5 rounded-xl text-center">
+              <div class="text-emerald-400 text-lg font-extrabold">16 رسمة</div>
+              <div class="text-xs text-slate-400 mt-0.5">أسئلة مدعمة بالصور</div>
+            </div>
+            <div class="bg-slate-900/70 border border-slate-800 p-3.5 rounded-xl text-center">
+              <div class="text-amber-400 text-lg font-extrabold">سهل / متوسط</div>
+              <div class="text-xs text-slate-400 mt-0.5">مستوى الصعوبة</div>
+            </div>
+            <div class="bg-slate-900/70 border border-slate-800 p-3.5 rounded-xl text-center">
+              <div class="text-purple-400 text-lg font-extrabold font-mono-code">JSONB + SQL</div>
+              <div class="text-xs text-slate-400 mt-0.5">تصدير فوري للنتائج</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Domains & Grading Info Card -->
+        <div class="lg:col-span-5 space-y-5">
+          <div class="glass-card rounded-2xl p-6 border border-slate-800">
+            <h3 class="text-base font-bold text-white flex items-center gap-2 mb-4">
+              <i class="fa-solid fa-layer-group text-cyan-400"></i>
+              <span>توزيع محاور اختبار CompTIA ITF+</span>
+            </h3>
+            <div class="space-y-3 text-xs sm:text-sm">
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/80 border border-slate-800/80">
+                <span class="text-slate-200 flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                  1. مفاهيم ومصطلحات تقنية المعلومات
+                </span>
+                <span class="font-mono-code text-cyan-400 font-bold">7 أسئلة</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/80 border border-slate-800/80">
+                <span class="text-slate-200 flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                  2. البنية التحتية والعتاد والمنافذ (Hardware)
+                </span>
+                <span class="font-mono-code text-blue-400 font-bold">10 أسئلة</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/80 border border-slate-800/80">
+                <span class="text-slate-200 flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  3. التطبيقات وأنظمة التشغيل (OS & Software)
+                </span>
+                <span class="font-mono-code text-emerald-400 font-bold">6 أسئلة</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/80 border border-slate-800/80">
+                <span class="text-slate-200 flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  4. مفاهيم تطوير البرمجيات (Software Dev)
+                </span>
+                <span class="font-mono-code text-amber-400 font-bold">5 أسئلة</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/80 border border-slate-800/80">
+                <span class="text-slate-200 flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                  5. أساسيات قواعد البيانات و SQL
+                </span>
+                <span class="font-mono-code text-purple-400 font-bold">6 أسئلة</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/80 border border-slate-800/80">
+                <span class="text-slate-200 flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                  6. أمن المعلومات والشبكات (Security)
+                </span>
+                <span class="font-mono-code text-rose-400 font-bold">6 أسئلة</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grading Scale -->
+          <div class="glass-card rounded-2xl p-6 border border-slate-800">
+            <h3 class="text-base font-bold text-white flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-award text-amber-400"></i>
+              <span>معايير حقل التقدير اللفظي <code class="text-cyan-400 font-mono-code text-xs">(grade NVARCHAR(32))</code></span>
+            </h3>
+            <div class="grid grid-cols-2 gap-2.5 text-xs">
+              <div class="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                <span class="font-bold text-emerald-300">ممتاز</span>
+                <span class="font-mono-code text-emerald-400">85% - 100%</span>
+              </div>
+              <div class="p-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-between">
+                <span class="font-bold text-cyan-300">جيد جداً</span>
+                <span class="font-mono-code text-cyan-400">75% - 84%</span>
+              </div>
+              <div class="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
+                <span class="font-bold text-amber-300">مقبول</span>
+                <span class="font-mono-code text-amber-400">60% - 74%</span>
+              </div>
+              <div class="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-between">
+                <span class="font-bold text-rose-300">يحتاج مراجعة</span>
+                <span class="font-mono-code text-rose-400">0% - 59%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View 1B: Active Quiz Interface (Hidden until started) -->
+      <div id="view-active-quiz" class="hidden space-y-6">
+        <!-- Top Status Bar -->
+        <div class="glass-card rounded-2xl p-4 sm:px-6 flex flex-wrap items-center justify-between gap-4 border border-slate-800">
+          <div class="flex items-center gap-4">
+            <div class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs sm:text-sm">
+              <span class="text-slate-400">الطالب:</span>
+              <strong id="active-student-name" class="text-white mr-1"></strong>
+              <span id="active-student-id" class="font-mono-code text-cyan-400 mr-2 text-xs"></span>
+            </div>
+            <div class="hidden md:flex items-center gap-2 text-xs text-slate-400">
+              <span>التقدم:</span>
+              <strong id="answered-counter" class="text-emerald-400 font-mono-code">0 / 40</strong>
+            </div>
+          </div>
+
+          <!-- Progress Bar & Timer -->
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900 border border-cyan-500/30 text-cyan-300 font-mono-code text-sm">
+              <i class="fa-regular fa-clock text-cyan-400"></i>
+              <span id="quiz-timer-display">00:00</span>
+              <span class="text-[11px] text-slate-400 font-sans">(<span id="quiz-seconds-raw">0</span> ث)</span>
+            </div>
+
+            <button
+              type="button"
+              onclick="openSubmitConfirmation()"
+              class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm transition shadow-md shadow-emerald-500/10 flex items-center gap-2"
+            >
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>اعتماد وتسليم الاختبار</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Quiz Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <!-- Question Display Area (8 cols) -->
+          <div class="lg:col-span-8 glass-card rounded-2xl p-5 sm:p-7 border border-slate-800 flex flex-col justify-between min-h-[520px]">
+            <div>
+              <!-- Question Meta Header -->
+              <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                  <span id="q-number-badge" class="px-3 py-1 rounded-lg bg-cyan-500 text-slate-950 font-extrabold font-mono-code text-sm">
+                    سؤال 1 / 40
+                  </span>
+                  <span id="q-domain-badge" class="px-3 py-1 rounded-lg bg-slate-800 text-cyan-300 text-xs font-semibold border border-slate-700">
+                    مفاهيم تقنية المعلومات
+                  </span>
+                  <span id="q-difficulty-badge" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 text-xs font-bold border border-emerald-500/30">
+                    سهل
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onclick="toggleFlagQuestion()"
+                  id="btn-flag-question"
+                  class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700 text-xs font-semibold transition flex items-center gap-1.5"
+                >
+                  <i class="fa-regular fa-bookmark"></i>
+                  <span>تمييز للمراجعة</span>
+                </button>
+              </div>
+
+              <!-- Question Text -->
+              <h3 id="q-text" class="text-lg sm:text-xl font-bold text-white leading-relaxed mb-5"></h3>
+
+              <!-- Visual Illustration Container (Rendered when question has SVG) -->
+              <div id="q-visual-container" class="hidden mb-6 rounded-2xl bg-slate-950/90 border border-slate-800 p-4 overflow-hidden">
+                <div class="flex items-center justify-between text-xs text-slate-400 mb-2 pb-2 border-b border-slate-800/80">
+                  <span class="flex items-center gap-1.5 text-cyan-400 font-semibold">
+                    <i class="fa-solid fa-image"></i>
+                    <span id="q-visual-caption">رسم توضيحي تقني للسؤال</span>
+                  </span>
+                  <span class="text-[11px] font-mono-code text-slate-500">CompTIA ITF+ Visual Aid</span>
+                </div>
+                <div id="q-svg-wrapper" class="w-full flex justify-center items-center py-2"></div>
+              </div>
+
+              <!-- Options List -->
+              <div id="q-options-list" class="space-y-3"></div>
+            </div>
+
+            <!-- Bottom Navigation Controls -->
+            <div class="flex items-center justify-between pt-6 mt-6 border-t border-slate-800">
+              <button
+                type="button"
+                id="btn-prev-q"
+                onclick="navigateQuestion(-1)"
+                class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-sm transition flex items-center gap-2"
+              >
+                <i class="fa-solid fa-arrow-right"></i>
+                <span>السؤال السابق</span>
+              </button>
+
+              <div class="text-xs text-slate-400 hidden sm:block">
+                يمكنك التنقل السريع باستخدام لوحة أرقام الأسئلة
+              </div>
+
+              <button
+                type="button"
+                id="btn-next-q"
+                onclick="navigateQuestion(1)"
+                class="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-sm transition flex items-center gap-2"
+              >
+                <span>السؤال التالي</span>
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Question Navigator Sidebar (4 cols) -->
+          <div class="lg:col-span-4 glass-card rounded-2xl p-5 border border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h4 class="font-bold text-sm text-white flex items-center gap-2">
+                <i class="fa-solid fa-grip text-cyan-400"></i>
+                <span>خريطة الأسئلة (40 سؤالاً)</span>
+              </h4>
+              <span id="navigator-progress-pct" class="text-xs font-mono-code text-cyan-400 font-bold">0%</span>
+            </div>
+
+            <!-- Legend -->
+            <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-300 bg-slate-900/70 p-2.5 rounded-xl border border-slate-800">
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded bg-cyan-500 inline-block"></span>
+                <span>السؤال الحالي</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded bg-emerald-500/30 border border-emerald-500 inline-block"></span>
+                <span>تمت الإجابة</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded bg-amber-500/30 border border-amber-400 inline-block"></span>
+                <span>مميز للمراجعة</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded bg-slate-800 border border-slate-700 inline-block"></span>
+                <span>لم تتم الإجابة (<i class="fa-solid fa-image text-[9px] text-cyan-400"></i> مصور)</span>
+              </div>
+            </div>
+
+            <!-- 40 Buttons Grid -->
+            <div id="question-grid-nav" class="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-5 gap-2 max-h-[340px] overflow-y-auto p-1"></div>
+
+            <!-- Unanswered filter / Submit CTA -->
+            <div class="pt-3 border-t border-slate-800 space-y-2">
+              <button
+                type="button"
+                onclick="jumpToFirstUnanswered()"
+                class="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs font-semibold transition flex items-center justify-center gap-2"
+              >
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>الانتقال لأول سؤال غير مجاب</span>
+              </button>
+              <button
+                type="button"
+                onclick="openSubmitConfirmation()"
+                class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold text-sm shadow-lg transition flex items-center justify-center gap-2"
+              >
+                <i class="fa-solid fa-check-double"></i>
+                <span>إنهاء الاختبار وتوليد سجل SQL</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- View 1C: Quiz Submission Result & SQL Output (Hidden until submitted) -->
+      <div id="view-results" class="hidden space-y-6">
+        <!-- Result Summary Banner -->
+        <div class="glass-card rounded-2xl p-6 sm:p-8 border border-slate-800 relative overflow-hidden">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-5 mb-6">
+            <div>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-xs font-bold mb-2">
+                <i class="fa-solid fa-database"></i>
+                <span>تم حفظ المحاولة في جدول student_submissions بنجاح</span>
+              </span>
+              <h2 class="text-2xl sm:text-3xl font-extrabold text-white">تقرير نتيجة الاختبار وسجل قاعدة البيانات</h2>
+              <p id="res-submission-meta" class="text-xs font-mono-code text-slate-400 mt-1"></p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+              <button
+                onclick="switchMainTab('database')"
+                class="px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs sm:text-sm font-bold transition flex items-center gap-2"
+              >
+                <i class="fa-solid fa-table"></i>
+                <span>عرض في جدول قاعدة البيانات</span>
+              </button>
+              <button
+                onclick="resetToStartScreen()"
+                class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs sm:text-sm font-bold transition flex items-center gap-2"
+              >
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>محاولة لطالب جديد</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Schema-Mapped Metrics Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+              <span class="text-[11px] font-mono-code text-cyan-400 block">student_name</span>
+              <strong id="res-student-name" class="text-base text-white font-bold mt-1 block truncate"></strong>
+              <span id="res-student-id" class="text-xs font-mono-code text-slate-400"></span>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+              <span class="text-[11px] font-mono-code text-cyan-400 block">score / total_questions</span>
+              <strong id="res-score" class="text-2xl text-emerald-400 font-extrabold font-mono-code mt-1 block"></strong>
+              <span class="text-xs text-slate-400">الإجابات الصحيحة</span>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+              <span class="text-[11px] font-mono-code text-cyan-400 block">percentage</span>
+              <strong id="res-percentage" class="text-2xl text-cyan-300 font-extrabold font-mono-code mt-1 block"></strong>
+              <span class="text-xs text-slate-400">CHECK (0..100)</span>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+              <span class="text-[11px] font-mono-code text-cyan-400 block">grade</span>
+              <strong id="res-grade" class="text-lg font-extrabold mt-1 block"></strong>
+              <span class="text-xs text-slate-400">التقدير اللفظي</span>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+              <span class="text-[11px] font-mono-code text-cyan-400 block">duration_seconds</span>
+              <strong id="res-duration" class="text-2xl text-amber-400 font-extrabold font-mono-code mt-1 block"></strong>
+              <span class="text-xs text-slate-400">الزمن الفعلي بالثواني</span>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+              <span class="text-[11px] font-mono-code text-cyan-400 block">submitted_at</span>
+              <strong id="res-timestamp" class="text-xs text-purple-300 font-mono-code mt-2 block break-all"></strong>
+              <span class="text-[11px] text-slate-400">ISO 8601 TIMESTAMPTZ</span>
+            </div>
+          </div>
+
+          <!-- Instant Generated SQL Statement for this Submission -->
+          <div class="mt-6 bg-slate-950 rounded-xl border border-slate-800 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-terminal text-emerald-400"></i>
+                <span class="text-xs sm:text-sm font-bold text-white">أمر SQL INSERT المولد لهذه المحاولة (جاهز للنسخ والتنفيذ):</span>
+              </div>
+              <button
+                onclick="copyTextFromElement('res-single-sql-code')"
+                class="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-xs font-bold transition flex items-center gap-1.5"
+              >
+                <i class="fa-regular fa-copy"></i>
+                <span>نسخ أمر INSERT</span>
+              </button>
+            </div>
+            <pre id="res-single-sql-code" dir="ltr" class="font-mono-code text-xs text-emerald-300 bg-slate-900/90 p-3.5 rounded-lg overflow-x-auto whitespace-pre-wrap break-all border border-slate-800/80"></pre>
+          </div>
+        </div>
+
+        <!-- Detailed Review of 40 Questions -->
+        <div class="glass-card rounded-2xl p-6 border border-slate-800">
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-cyan-400"></i>
+                <span>المراجعة التفصيلية لإجابات الطالب ومقارنتها بالإجابة الصحيحة</span>
+              </h3>
+              <p class="text-xs text-slate-400 mt-1">تطابق مصفوفة حقل <code class="text-amber-400 font-mono-code">answers (JSONB)</code> المخزنة في قاعدة البيانات</p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button onclick="filterReview('all')" id="rev-filter-all" class="px-3 py-1.5 rounded-lg bg-cyan-500 text-slate-950 text-xs font-bold">الكل (40)</button>
+              <button onclick="filterReview('correct')" id="rev-filter-correct" class="px-3 py-1.5 rounded-lg bg-slate-800 text-emerald-300 text-xs font-bold">الصحيحة فقط</button>
+              <button onclick="filterReview('wrong')" id="rev-filter-wrong" class="px-3 py-1.5 rounded-lg bg-slate-800 text-rose-300 text-xs font-bold">الخاطئة فقط</button>
+            </div>
+          </div>
+
+          <div id="review-questions-container" class="space-y-4"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 2: DATABASE & SQL MANAGER ==================== -->
+    <section id="section-database" class="hidden space-y-6">
+      <!-- SQL Script Generator Box -->
+      <div class="glass-card rounded-2xl p-6 border border-slate-800">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-code text-cyan-400"></i>
+              <span>مخطط وأوامر SQL لجدول نتائج الكويزات <code class="text-amber-400 font-mono-code text-base">student_submissions</code></span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">
+              يحتوي الكود أدناه على أمر إنشاء الجدول <code class="font-mono-code text-cyan-300">CREATE TABLE IF NOT EXISTS</code> بالإضافة إلى أوامر <code class="font-mono-code text-emerald-300">INSERT INTO</code> للسجلات المسبقة وجميع المحاولات الجديدة.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              onclick="copyTextFromElement('full-sql-script-box')"
+              class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-md"
+            >
+              <i class="fa-regular fa-copy"></i>
+              <span>نسخ كود SQL الكامل</span>
+            </button>
+            <button
+              onclick="downloadSQLFile()"
+              class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-bold text-xs sm:text-sm transition flex items-center gap-2"
+            >
+              <i class="fa-solid fa-download text-emerald-400"></i>
+              <span>تحميل ملف .sql</span>
+            </button>
+          </div>
+        </div>
+
+        <pre id="full-sql-script-box" dir="ltr" class="font-mono-code text-xs text-slate-200 bg-slate-950 p-4 rounded-xl border border-slate-800 overflow-x-auto max-h-[320px] leading-relaxed"></pre>
+      </div>
+
+      <!-- Submissions Records Table -->
+      <div class="glass-card rounded-2xl p-6 border border-slate-800">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-table-list text-amber-400"></i>
+              <span>سجلات الجدول الحالية (<span id="table-rows-count">2</span> سجل)</span>
+            </h3>
+            <p class="text-xs text-slate-400">تتضمن السجلين المرفقين في المتطلبات بالإضافة لأي اختبار يتم تقديمه عبر المنصة</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-right text-xs sm:text-sm bg-slate-950/70">
+            <thead class="bg-slate-900 text-slate-300 font-mono-code text-xs border-b border-slate-800">
+              <tr>
+                <th class="py-3.5 px-3">id</th>
+                <th class="py-3.5 px-3">quiz_id</th>
+                <th class="py-3.5 px-3 font-sans">quiz_title</th>
+                <th class="py-3.5 px-3">student_id</th>
+                <th class="py-3.5 px-3 font-sans">student_name</th>
+                <th class="py-3.5 px-3">score</th>
+                <th class="py-3.5 px-3">total</th>
+                <th class="py-3.5 px-3">percentage</th>
+                <th class="py-3.5 px-3 font-sans">grade</th>
+                <th class="py-3.5 px-3">duration_s</th>
+                <th class="py-3.5 px-3">answers (JSONB)</th>
+                <th class="py-3.5 px-3">submitted_at</th>
+              </tr>
+            </thead>
+            <tbody id="submissions-tbody" class="divide-y divide-slate-800/80 text-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: SCHEMA SPECIFICATION (IDENTICAL TO IMAGE) ==================== -->
+    <section id="section-schema" class="hidden space-y-6">
+      <div class="glass-card rounded-2xl p-6 sm:p-8 border border-slate-800">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5">
+              <i class="fa-solid fa-diagram-project text-cyan-400"></i>
+              <span>هيكلية جدول <code class="font-mono-code text-cyan-400">student_submissions</code> المعتمدة</span>
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1">
+              التطابق الكامل مع الحقول، أنواع البيانات (Data Types)، والقيود والفهرسة (Constraints) المرسلة في الصورة المرجعية
+            </p>
+          </div>
+          <span class="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono-code">
+            12 Columns Verified
+          </span>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-800/90 shadow-inner">
+          <table class="w-full text-right border-collapse">
+            <thead>
+              <tr class="bg-slate-900/95 border-b border-slate-800 text-slate-300 text-xs sm:text-sm font-bold">
+                <th class="py-4 px-5">اسم الحقل (Column)</th>
+                <th class="py-4 px-5">نوع البيانات (Data Type)</th>
+                <th class="py-4 px-5">القيود والفهرسة (Constraints)</th>
+                <th class="py-4 px-5">الوصف الوظيفي في النظام</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/80 bg-[#0d1424] text-xs sm:text-sm">
+              <tr class="hover:bg-slate-900/60 transition">
+                <td class="py-4 px-5 font-mono-code font-bold text-cyan-400" dir="ltr">id</td>
+                <td class="py-4 px-5 font-mono-code font-semibold text-amber-400" dir="ltr">VARCHAR(36)</td>
+                <td class="py-4 px-5 font-mono-code text-emerald-400" dir="ltr">PRIMARY KEY, NOT NULL</td>
+                <td class="py-4 px-5 text-slate-200">المعرف الفريد لسجل محاولة الاختبار (UUID)</td>
+              </tr>
+              <tr class="hover:bg-slate-900/60 transition">
+                <td class="py-4 px-5 font-mono-code font-bold text-cyan-400" dir="ltr">quiz_id</td>
+                <td class="py-4 px-5 font-mono-code font-semibold text-amber-400" dir="ltr">VARCHAR(48)</td>
+                <td class="py-4 px-5 font-mono-code text-emerald-400" dir="ltr">FOREIGN KEY REFERENCES quizzes(id), NOT NULL</td>
+                <td class="py-4 px-5 text-slate-200">معرف الكويز الذي قدمه الطالب (يربط النتيجة بالكويز النشط وقت التقديم)</td>
+              </tr>
+              <tr class="hover:bg-slate-900/60 transition">
+                <td class="py-4 px-5 font-mono-code font-bold text-cyan-400" dir="ltr">quiz_title</td>
+                <td class="py-4 px-5 font-mono-code font-semibold text-amber-400" dir="ltr">NVARCHAR(160)</td>
+                <td class="py-4 px-5 font-mono-code text-emerald-400" dir="ltr">NOT NULL</td>
+                <td class="py-4 px-5 text-slate-200">عنوان الكويز الذي اختبر فيه الطالب</td>
+              </tr>
+              <tr class="hover:bg-slate-900/60 transition">
+                <td class="py-4 px-5 font-mono-code font-bold text-cyan-400" dir="ltr">student_id</td>
+                <td class="py-4 px-5 font-mono-code font-semibold text-amber-400" dir="ltr">VARCHAR(32)</td>
+                <td class="py-4 px-5 font-mono-code text-emerald-400" dir="ltr">UNIQUE (quiz_id, student_id), NOT NULL</td>
+                <td class="py-4 px-5 text-slate-200">الرقم التدريبي أو الجامعي للطالب (محاولة واحدة لكل كويز)</td>
+              </tr>
+              <tr class="hover:bg-slate-900/60 transition">
+                <td class="py-4 px-5 font-mono-code font-bold text-cyan-400" dir="ltr">student_name</td>
+                <td class="py-4 px-5 font-mono-code font-semibold text-amber-400" dir="ltr">NVARCHAR(120)</td>
+                <td class="py-4 px-5 font-mono-code text-emerald-400" dir="ltr">NOT NULL</td>
+                <td class="py-4 px-5 text-slate-200">اسم الطالب الكامل المدخل عند بوابة الدخول</td>
+              </tr>
+              <tr class="hover:bg-slate-900/60 transition">
+                <td class="py-4 px-5 font-mono-code font-bold text-cyan-400" dir="ltr">score</td>
+                <td class="py-4 px-5 font-mono-code font-semibold text-amber-400" dir="ltr">INT</td>
+                <td class="py-4 px-5 font-mono-code text-emerald-400" dir="ltr">NOT NULL</td>
+                <td class="py-4 px-5 text-slate-200">عدد الإجابات الصحيحة التي حققها الطالب</td>
+              </tr>
+              <tr class="hover:bg-slate-900/60 transition">
+                <td class="py-4 px-5 font-mono-code font-bold text-cyan-400" dir="ltr">total_questions</td>
+                <td class="py-4 px-5 font-mono-code font-semibold text-amber-400" dir="ltr">INT</td>
+                <td class="py-4 px-5 font-mono-code text-emerald-400" dir="ltr">NOT NULL</td>
+                <td class="py-4 px-5 text-slate-200">إجمالي عدد أسئلة الكويز</td>
+              </tr>
+              <tr class="hover:bg-slate-900/60 transition">
+                <td class="py-4 px-5 font-mono-code font-bold text-cyan-400" dir="ltr">percentage</td>
+                <td class="py-4 px-5 font-mono-code font-semibold text-amber-400" dir="ltr">INT</td>
+                <td class="py-4 px-5 font-mono-code text-emerald-400" dir="ltr">NOT NULL, CHECK (percentage BETWEEN 0 AND 100)</td>
+                <td class="py-4 px-5 text-slate-200">النسبة المئوية للدرجة النهائية</td>
+              </tr>
+              <tr class="hover:bg-slate-900/60 transition">
+                <td class="py-4 px-5 font-mono-code font-bold text-cyan-400" dir="ltr">grade</td>
+                <td class="py-4 px-5 font-mono-code font-semibold text-amber-400" dir="ltr">NVARCHAR(32)</td>
+                <td class="py-4 px-5 font-mono-code text-emerald-400" dir="ltr">NOT NULL</td>
+                <td class="py-4 px-5 text-slate-200">التقدير اللفظي (ممتاز، جيد جداً، مقبول، يحتاج مراجعة)</td>
+              </tr>
+              <tr class="hover:bg-slate-900/60 transition">
+                <td class="py-4 px-5 font-mono-code font-bold text-cyan-400" dir="ltr">duration_seconds</td>
+                <td class="py-4 px-5 font-mono-code font-semibold text-amber-400" dir="ltr">INT</td>
+                <td class="py-4 px-5 font-mono-code text-emerald-400" dir="ltr">NOT NULL, DEFAULT 0</td>
+                <td class="py-4 px-5 text-slate-200">الزمن الفعلي المستغرق لإنهاء الاختبار بالثواني</td>
+              </tr>
+              <tr class="hover:bg-slate-900/60 transition">
+                <td class="py-4 px-5 font-mono-code font-bold text-cyan-400" dir="ltr">answers</td>
+                <td class="py-4 px-5 font-mono-code font-semibold text-amber-400" dir="ltr">JSONB</td>
+                <td class="py-4 px-5 font-mono-code text-emerald-400" dir="ltr">NOT NULL</td>
+                <td class="py-4 px-5 text-slate-200">مصفوفة تفصيلية لإجابات الطالب ومقارنتها بالإجابة الصحيحة</td>
+              </tr>
+              <tr class="hover:bg-slate-900/60 transition">
+                <td class="py-4 px-5 font-mono-code font-bold text-cyan-400" dir="ltr">submitted_at</td>
+                <td class="py-4 px-5 font-mono-code font-semibold text-amber-400" dir="ltr">TIMESTAMP WITH TIME ZONE</td>
+                <td class="py-4 px-5 font-mono-code text-emerald-400" dir="ltr">NOT NULL, DEFAULT CURRENT_TIMESTAMP</td>
+                <td class="py-4 px-5 text-slate-200">تاريخ ووقت اعتماد وتسليم الاختبار</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL 1: CONFIRM QUIZ SUBMISSION ==================== -->
+  <div id="modal-submit-confirm" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-card max-w-md w-full rounded-2xl p-6 border border-slate-700 shadow-2xl space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+          <i class="fa-solid fa-clipboard-check text-lg"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white">تأكيد اعتماد وتسليم الاختبار</h3>
+      </div>
+
+      <p id="modal-submit-summary" class="text-sm text-slate-300 leading-relaxed"></p>
+
+      <div id="modal-unanswered-alert" class="hidden p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs"></div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+        <button
+          type="button"
+          onclick="closeSubmitConfirmation()"
+          class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-bold transition"
+        >
+          العودة للمراجعة
+        </button>
+        <button
+          type="button"
+          onclick="finalizeQuizSubmission()"
+          class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs sm:text-sm font-extrabold transition shadow-lg"
+        >
+          تأكيد التسليم وحفظ السجل
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: JSONB ANSWERS INSPECTOR ==================== -->
+  <div id="modal-json-inspector" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-card max-w-2xl w-full rounded-2xl p-6 border border-slate-700 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-brackets-curly text-amber-400"></i>
+            <span>معاينة حقل <code class="font-mono-code text-cyan-400">answers (JSONB)</code></span>
+          </h3>
+          <p id="json-modal-subtitle" class="text-xs text-slate-400 font-mono-code mt-0.5"></p>
+        </div>
+        <button onclick="closeJsonInspector()" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <pre id="json-modal-content" dir="ltr" class="font-mono-code text-xs text-amber-300 bg-slate-950 p-4 rounded-xl border border-slate-800 max-h-[380px] overflow-y-auto"></pre>
+
+      <div class="flex justify-end gap-2">
+        <button
+          onclick="copyTextFromElement('json-modal-content')"
+          class="px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-xs font-bold transition"
+        >
+          <i class="fa-regular fa-copy ml-1"></i> نسخ JSONB
+        </button>
+        <button
+          onclick="closeJsonInspector()"
+          class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition"
+        >
+          إغلاق
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== APPLICATION LOGIC & DATA ==================== -->
+  <script>
+    /*************************************************************************
+     * 1. QUIZ METADATA & PRE-POPULATED SQL SUBMISSIONS (FROM USER PROMPT)
+     *************************************************************************/
+    const CURRENT_QUIZ_ID = 'quiz-comptia-itf-40';
+    const CURRENT_QUIZ_TITLE = 'اختبار CompTIA IT Fundamentals الشامل (40 سؤالاً)';
+
+    const INITIAL_SUBMISSIONS = [
+      {
+        id: 'sub-1793100498634-p307',
+        quiz_id: 'quiz-bios-uefi-1',
+        quiz_title: 'اختبار BIOS و UEFI وأنواع الموصلات',
+        student_id: 'yyyy',
+        student_name: 'yyyy',
+        score: 4,
+        total_questions: 14,
+        percentage: 29,
+        grade: 'يحتاج مراجعة',
+        duration_seconds: 20,
+        answers: [{"questionId":1,"selectedOption":0,"correctOption":1,"isCorrect":false},{"questionId":2,"selectedOption":2,"correctOption":2,"isCorrect":true},{"questionId":3,"selectedOption":2,"correctOption":0,"isCorrect":false},{"questionId":4,"selectedOption":1,"correctOption":3,"isCorrect":false},{"questionId":5,"selectedOption":2,"correctOption":1,"isCorrect":false},{"questionId":6,"selectedOption":2,"correctOption":3,"isCorrect":false},{"questionId":7,"selectedOption":2,"correctOption":2,"isCorrect":true},{"questionId":8,"selectedOption":2,"correctOption":0,"isCorrect":false},{"questionId":9,"selectedOption":2,"correctOption":3,"isCorrect":false},{"questionId":10,"selectedOption":1,"correctOption":1,"isCorrect":true},{"questionId":11,"selectedOption":1,"correctOption":0,"isCorrect":false},{"questionId":12,"selectedOption":1,"correctOption":2,"isCorrect":false},{"questionId":13,"selectedOption":1,"correctOption":1,"isCorrect":true},{"questionId":14,"selectedOption":1,"correctOption":3,"isCorrect":false}],
+        submitted_at: '2026-10-27T11:28:18.634Z'
+      },
+      {
+        id: 'sub-1793100431145-w7uj',
+        quiz_id: 'quiz-1793001254821-n01o7',
+        quiz_title: 'اختبار الشبكات وأنظمة التشغيل وإدارة الخوادم (30 سؤالاً)',
+        student_id: 'tttt',
+        student_name: 'tttt',
+        score: 8,
+        total_questions: 30,
+        percentage: 27,
+        grade: 'يحتاج مراجعة',
+        duration_seconds: 54,
+        answers: [{"questionId":1,"selectedOption":1,"correctOption":1,"isCorrect":true},{"questionId":2,"selectedOption":0,"correctOption":2,"isCorrect":false},{"questionId":3,"selectedOption":1,"correctOption":0,"isCorrect":false},{"questionId":4,"selectedOption":1,"correctOption":3,"isCorrect":false},{"questionId":5,"selectedOption":1,"correctOption":1,"isCorrect":true},{"questionId":6,"selectedOption":1,"correctOption":3,"isCorrect":false},{"questionId":7,"selectedOption":2,"correctOption":2,"isCorrect":true},{"questionId":8,"selectedOption":1,"correctOption":0,"isCorrect":false},{"questionId":9,"selectedOption":1,"correctOption":3,"isCorrect":false},{"questionId":10,"selectedOption":1,"correctOption":1,"isCorrect":true},{"questionId":11,"selectedOption":1,"correctOption":0,"isCorrect":false},{"questionId":12,"selectedOption":3,"correctOption":2,"isCorrect":false},{"questionId":13,"selectedOption":3,"correctOption":1,"isCorrect":false},{"questionId":14,"selectedOption":3,"correctOption":3,"isCorrect":true},{"questionId":15,"selectedOption":3,"correctOption":1,"isCorrect":false},{"questionId":16,"selectedOption":3,"correctOption":2,"isCorrect":false},{"questionId":17,"selectedOption":2,"correctOption":0,"isCorrect":false},{"questionId":18,"selectedOption":1,"correctOption":3,"isCorrect":false},{"questionId":19,"selectedOption":1,"correctOption":1,"isCorrect":true},{"questionId":20,"selectedOption":1,"correctOption":3,"isCorrect":false},{"questionId":21,"selectedOption":1,"correctOption":2,"isCorrect":false},{"questionId":22,"selectedOption":2,"correctOption":0,"isCorrect":false},{"questionId":23,"selectedOption":2,"correctOption":3,"isCorrect":false},{"questionId":24,"selectedOption":1,"correctOption":1,"isCorrect":true},{"questionId":25,"selectedOption":2,"correctOption":0,"isCorrect":false},{"questionId":26,"selectedOption":3,"correctOption":2,"isCorrect":false},{"questionId":27,"selectedOption":2,"correctOption":1,"isCorrect":false},{"questionId":28,"selectedOption":1,"correctOption":3,"isCorrect":false},{"questionId":29,"selectedOption":1,"correctOption":1,"isCorrect":true},{"questionId":30,"selectedOption":1,"correctOption":2,"isCorrect":false}],
+        submitted_at: '2026-10-27T11:27:11.145Z'
+      }
+    ];
+
+    /*************************************************************************
+     * 2. CUSTOM INLINE SVG ILLUSTRATIONS FOR VISUAL QUESTIONS (16 DIAGRAMS)
+     *************************************************************************/
+    const SVG_DIAGRAMS = {
+      binaryTable: `
+        <svg viewBox="0 0 600 135" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="125" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <text x="300" y="28" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="Cairo">جدول أوزان الخانات الثنائية (8-Bit Binary Byte)</text>
+          <!-- Columns -->
+          <g font-family="JetBrains Mono" text-anchor="middle">
+            <!-- Headers: 128 64 32 16 8 4 2 1 -->
+            <rect x="22" y="40" width="65" height="36" rx="6" fill="#1e293b" stroke="#475569"/>
+            <text x="54.5" y="63" fill="#38bdf8" font-size="15" font-weight="bold">128</text>
+            <rect x="92" y="40" width="65" height="36" rx="6" fill="#1e293b" stroke="#475569"/>
+            <text x="124.5" y="63" fill="#38bdf8" font-size="15" font-weight="bold">64</text>
+            <rect x="162" y="40" width="65" height="36" rx="6" fill="#06b6d4" fill-opacity="0.2" stroke="#06b6d4"/>
+            <text x="194.5" y="63" fill="#22d3ee" font-size="15" font-weight="bold">32</text>
+            <rect x="232" y="40" width="65" height="36" rx="6" fill="#1e293b" stroke="#475569"/>
+            <text x="264.5" y="63" fill="#38bdf8" font-size="15" font-weight="bold">16</text>
+            <rect x="302" y="40" width="65" height="36" rx="6" fill="#06b6d4" fill-opacity="0.2" stroke="#06b6d4"/>
+            <text x="334.5" y="63" fill="#22d3ee" font-size="15" font-weight="bold">8</text>
+            <rect x="372" y="40" width="65" height="36" rx="6" fill="#1e293b" stroke="#475569"/>
+            <text x="404.5" y="63" fill="#38bdf8" font-size="15" font-weight="bold">4</text>
+            <rect x="442" y="40" width="65" height="36" rx="6" fill="#06b6d4" fill-opacity="0.2" stroke="#06b6d4"/>
+            <text x="474.5" y="63" fill="#22d3ee" font-size="15" font-weight="bold">2</text>
+            <rect x="512" y="40" width="65" height="36" rx="6" fill="#1e293b" stroke="#475569"/>
+            <text x="544.5" y="63" fill="#38bdf8" font-size="15" font-weight="bold">1</text>
+
+            <!-- Bits: 0 0 1 0 1 0 1 0 -->
+            <rect x="22" y="82" width="65" height="38" rx="6" fill="#090d16" stroke="#334155"/>
+            <text x="54.5" y="107" fill="#64748b" font-size="18">0</text>
+            <rect x="92" y="82" width="65" height="38" rx="6" fill="#090d16" stroke="#334155"/>
+            <text x="124.5" y="107" fill="#64748b" font-size="18">0</text>
+            <rect x="162" y="82" width="65" height="38" rx="6" fill="#064e3b" stroke="#10b981" stroke-width="2"/>
+            <text x="194.5" y="107" fill="#34d399" font-size="18" font-weight="bold">1</text>
+            <rect x="232" y="82" width="65" height="38" rx="6" fill="#090d16" stroke="#334155"/>
+            <text x="264.5" y="107" fill="#64748b" font-size="18">0</text>
+            <rect x="302" y="82" width="65" height="38" rx="6" fill="#064e3b" stroke="#10b981" stroke-width="2"/>
+            <text x="334.5" y="107" fill="#34d399" font-size="18" font-weight="bold">1</text>
+            <rect x="372" y="82" width="65" height="38" rx="6" fill="#090d16" stroke="#334155"/>
+            <text x="404.5" y="107" fill="#64748b" font-size="18">0</text>
+            <rect x="442" y="82" width="65" height="38" rx="6" fill="#064e3b" stroke="#10b981" stroke-width="2"/>
+            <text x="474.5" y="107" fill="#34d399" font-size="18" font-weight="bold">1</text>
+            <rect x="512" y="82" width="65" height="38" rx="6" fill="#090d16" stroke="#334155"/>
+            <text x="544.5" y="107" fill="#64748b" font-size="18">0</text>
+          </g>
+        </svg>
+      `,
+      iposCycle: `
+        <svg viewBox="0 0 620 150" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="610" height="140" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <!-- Input -->
+          <rect x="25" y="30" width="130" height="60" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <text x="90" y="57" text-anchor="middle" fill="#38bdf8" font-size="14" font-weight="bold" font-family="Cairo">1. الإدخال (Input)</text>
+          <text x="90" y="76" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Cairo">لوحة المفاتيح / الفأرة</text>
+          <!-- Arrow 1 -->
+          <path d="M160 60 L195 60" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrow)"/>
+          <!-- Processing ? -->
+          <rect x="200" y="25" width="165" height="70" rx="10" fill="#06b6d4" fill-opacity="0.18" stroke="#22d3ee" stroke-width="2.5" stroke-dasharray="5,3"/>
+          <text x="282" y="55" text-anchor="middle" fill="#fbbf24" font-size="16" font-weight="bold" font-family="Cairo">2. [ ؟؟؟ ]</text>
+          <text x="282" y="78" text-anchor="middle" fill="#e2e8f0" font-size="12" font-family="JetBrains Mono">CPU / Processor</text>
+          <!-- Arrow 2 -->
+          <path d="M370 60 L405 60" stroke="#22d3ee" stroke-width="3"/>
+          <!-- Output -->
+          <rect x="410" y="30" width="180" height="60" rx="10" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+          <text x="500" y="57" text-anchor="middle" fill="#34d399" font-size="14" font-weight="bold" font-family="Cairo">3. الإخراج (Output)</text>
+          <text x="500" y="76" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Cairo">الشاشة / الطابعة</text>
+          <!-- Storage bottom -->
+          <rect x="210" y="108" width="145" height="30" rx="6" fill="#1e293b" stroke="#a855f7" stroke-width="1.5"/>
+          <text x="282" y="128" text-anchor="middle" fill="#c084fc" font-size="12" font-weight="bold" font-family="Cairo">4. التخزين (Storage)</text>
+        </svg>
+      `,
+      videoPorts: `
+        <svg viewBox="0 0 600 160" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="150" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <!-- Port A: VGA -->
+          <g transform="translate(30, 25)">
+            <rect x="0" y="0" width="150" height="110" rx="10" fill="#1e293b" stroke="#475569"/>
+            <polygon points="35,30 115,30 105,70 45,70" fill="#1d4ed8" stroke="#93c5fd" stroke-width="2.5"/>
+            <circle cx="22" cy="50" r="6" fill="#64748b"/>
+            <circle cx="128" cy="50" r="6" fill="#64748b"/>
+            <!-- 15 pins in 3 rows -->
+            <circle cx="52" cy="40" r="2.2" fill="#f8fafc"/><circle cx="64" cy="40" r="2.2" fill="#f8fafc"/><circle cx="76" cy="40" r="2.2" fill="#f8fafc"/><circle cx="88" cy="40" r="2.2" fill="#f8fafc"/><circle cx="100" cy="40" r="2.2" fill="#f8fafc"/>
+            <circle cx="55" cy="50" r="2.2" fill="#f8fafc"/><circle cx="67" cy="50" r="2.2" fill="#f8fafc"/><circle cx="79" cy="50" r="2.2" fill="#f8fafc"/><circle cx="91" cy="50" r="2.2" fill="#f8fafc"/><circle cx="103" cy="50" r="2.2" fill="#f8fafc"/>
+            <circle cx="52" cy="60" r="2.2" fill="#f8fafc"/><circle cx="64" cy="60" r="2.2" fill="#f8fafc"/><circle cx="76" cy="60" r="2.2" fill="#f8fafc"/><circle cx="88" cy="60" r="2.2" fill="#f8fafc"/><circle cx="100" cy="60" r="2.2" fill="#f8fafc"/>
+            <text x="75" y="96" text-anchor="middle" fill="#93c5fd" font-size="13" font-family="Cairo" font-weight="bold">منفذ (أ) - 15 دبوساً أزرق</text>
+          </g>
+          <!-- Port B: HDMI (Highlighted) -->
+          <g transform="translate(220, 20)">
+            <rect x="0" y="0" width="165" height="120" rx="10" fill="#064e3b" fill-opacity="0.35" stroke="#10b981" stroke-width="2.5"/>
+            <polygon points="28,35 137,35 137,55 122,70 43,70 28,55" fill="#090d16" stroke="#34d399" stroke-width="2.5"/>
+            <rect x="48" y="50" width="69" height="6" rx="2" fill="#fbbf24"/>
+            <text x="82.5" y="95" text-anchor="middle" fill="#34d399" font-size="14" font-family="Cairo" font-weight="bold">المنفذ المشار إليه (ب)</text>
+            <text x="82.5" y="112" text-anchor="middle" fill="#a7f3d0" font-size="11" font-family="Cairo">صوت + صورة رقمية عالية الدقة</text>
+          </g>
+          <!-- Port C: DisplayPort -->
+          <g transform="translate(415, 25)">
+            <rect x="0" y="0" width="150" height="110" rx="10" fill="#1e293b" stroke="#475569"/>
+            <polygon points="30,32 120,32 120,68 45,68 30,53" fill="#090d16" stroke="#cbd5e1" stroke-width="2.5"/>
+            <rect x="48" y="48" width="56" height="5" fill="#38bdf8"/>
+            <text x="75" y="96" text-anchor="middle" fill="#cbd5e1" font-size="13" font-family="Cairo" font-weight="bold">منفذ (ج) - زاوية مشطوفة واحدة</text>
+          </g>
+        </svg>
+      `,
+      motherboardDiagram: `
+        <svg viewBox="0 0 600 210" class="w-full max-w-xl h-auto">
+          <rect x="10" y="10" width="580" height="190" rx="14" fill="#0b1325" stroke="#334155" stroke-width="2.5"/>
+          <!-- CPU Socket #1 -->
+          <rect x="60" y="35" width="110" height="105" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <rect x="78" y="53" width="74" height="70" rx="4" fill="#0f172a" stroke="#64748b" stroke-dasharray="3,3"/>
+          <text x="115" y="92" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="bold" font-family="JetBrains Mono">(1) CPU Socket</text>
+
+          <!-- RAM Slots #2 (Highlighted) -->
+          <g>
+            <rect x="210" y="25" width="135" height="125" rx="8" fill="#06b6d4" fill-opacity="0.15" stroke="#22d3ee" stroke-width="2.5"/>
+            <rect x="228" y="35" width="16" height="105" rx="3" fill="#0f172a" stroke="#fbbf24" stroke-width="2"/>
+            <rect x="254" y="35" width="16" height="105" rx="3" fill="#0f172a" stroke="#fbbf24" stroke-width="2"/>
+            <rect x="280" y="35" width="16" height="105" rx="3" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+            <rect x="306" y="35" width="16" height="105" rx="3" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+            <text x="395" y="65" fill="#22d3ee" font-size="15" font-weight="bold" font-family="Cairo">← المنطقة رقم (2)</text>
+            <text x="395" y="88" fill="#94a3b8" font-size="12" font-family="Cairo">4 شقوق طولية متوازية بجانب المعالج</text>
+          </g>
+
+          <!-- PCIe Slot #3 -->
+          <rect x="55" y="160" width="240" height="22" rx="4" fill="#1e293b" stroke="#a855f7" stroke-width="2"/>
+          <text x="175" y="175" text-anchor="middle" fill="#c084fc" font-size="12" font-family="JetBrains Mono">(3) PCIe x16 Slot</text>
+
+          <!-- CMOS Battery #4 -->
+          <circle cx="480" cy="145" r="26" fill="#334155" stroke="#cbd5e1" stroke-width="2.5"/>
+          <text x="480" y="149" text-anchor="middle" fill="#f8fafc" font-size="11" font-family="JetBrains Mono">(4) CR2032</text>
+        </svg>
+      `,
+      rj45VsRj11: `
+        <svg viewBox="0 0 600 165" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="155" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <!-- RJ-45 -->
+          <g transform="translate(55, 22)">
+            <rect x="0" y="0" width="220" height="120" rx="10" fill="#064e3b" fill-opacity="0.3" stroke="#10b981" stroke-width="2"/>
+            <rect x="45" y="20" width="130" height="62" rx="6" fill="#090d16" stroke="#34d399" stroke-width="2"/>
+            <!-- 8 gold pins -->
+            <g fill="#fbbf24">
+              <rect x="60" y="22" width="7" height="24" rx="1"/>
+              <rect x="73" y="22" width="7" height="24" rx="1"/>
+              <rect x="86" y="22" width="7" height="24" rx="1"/>
+              <rect x="99" y="22" width="7" height="24" rx="1"/>
+              <rect x="112" y="22" width="7" height="24" rx="1"/>
+              <rect x="125" y="22" width="7" height="24" rx="1"/>
+              <rect x="138" y="22" width="7" height="24" rx="1"/>
+              <rect x="151" y="22" width="7" height="24" rx="1"/>
+            </g>
+            <text x="110" y="102" text-anchor="middle" fill="#34d399" font-size="14" font-weight="bold" font-family="Cairo">الموصل (أ): 8 دبابيس نحاسية (8P8C)</text>
+          </g>
+          <!-- RJ-11 -->
+          <g transform="translate(325, 22)">
+            <rect x="0" y="0" width="220" height="120" rx="10" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+            <rect x="65" y="25" width="90" height="55" rx="6" fill="#090d16" stroke="#94a3b8" stroke-width="2"/>
+            <!-- 4 gold pins -->
+            <g fill="#fbbf24">
+              <rect x="84" y="27" width="8" height="22" rx="1"/>
+              <rect x="99" y="27" width="8" height="22" rx="1"/>
+              <rect x="114" y="27" width="8" height="22" rx="1"/>
+              <rect x="129" y="27" width="8" height="22" rx="1"/>
+            </g>
+            <text x="110" y="102" text-anchor="middle" fill="#cbd5e1" font-size="14" font-weight="bold" font-family="Cairo">الموصل (ب): 4 دبابيس (خط الهاتف)</text>
+          </g>
+        </svg>
+      `,
+      ssdVsHdd: `
+        <svg viewBox="0 0 600 170" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="160" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <!-- HDD (A) -->
+          <g transform="translate(35, 20)">
+            <rect x="0" y="0" width="245" height="130" rx="10" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+            <circle cx="80" cy="65" r="44" fill="#090d16" stroke="#94a3b8" stroke-width="3"/>
+            <circle cx="80" cy="65" r="14" fill="#38bdf8"/>
+            <path d="M135 105 L95 68" stroke="#fbbf24" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="135" cy="105" r="8" fill="#f59e0b"/>
+            <text x="185" y="55" text-anchor="middle" fill="#f8fafc" font-size="14" font-weight="bold" font-family="Cairo">القرص (أ)</text>
+            <text x="185" y="78" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Cairo">أقراص مغناطيسية دوارة</text>
+            <text x="185" y="96" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Cairo">وذراع قراءة ميكانيكي</text>
+          </g>
+          <!-- SSD (B) -->
+          <g transform="translate(320, 20)">
+            <rect x="0" y="0" width="245" height="130" rx="10" fill="#064e3b" fill-opacity="0.3" stroke="#10b981" stroke-width="2"/>
+            <!-- NAND Chips -->
+            <rect x="22" y="25" width="42" height="34" rx="4" fill="#090d16" stroke="#34d399" stroke-width="2"/>
+            <rect x="74" y="25" width="42" height="34" rx="4" fill="#090d16" stroke="#34d399" stroke-width="2"/>
+            <rect x="22" y="70" width="42" height="34" rx="4" fill="#090d16" stroke="#34d399" stroke-width="2"/>
+            <rect x="74" y="70" width="42" height="34" rx="4" fill="#090d16" stroke="#34d399" stroke-width="2"/>
+            <text x="182" y="55" text-anchor="middle" fill="#34d399" font-size="14" font-weight="bold" font-family="Cairo">القرص (ب)</text>
+            <text x="182" y="78" text-anchor="middle" fill="#a7f3d0" font-size="11" font-family="Cairo">شرائح ذاكرة فلاش إلكترونية</text>
+            <text x="182" y="96" text-anchor="middle" fill="#a7f3d0" font-size="11" font-family="JetBrains Mono">(NAND Flash)</text>
+          </g>
+        </svg>
+      `,
+      usbConnectors: `
+        <svg viewBox="0 0 600 150" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="140" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <!-- USB-A -->
+          <g transform="translate(35, 25)">
+            <rect x="0" y="0" width="155" height="100" rx="8" fill="#1e293b" stroke="#475569"/>
+            <rect x="28" y="28" width="100" height="36" fill="#090d16" stroke="#cbd5e1" stroke-width="2.5"/>
+            <rect x="33" y="33" width="90" height="14" fill="#3b82f6"/>
+            <text x="77" y="86" text-anchor="middle" fill="#cbd5e1" font-size="13" font-family="JetBrains Mono">USB Type-A</text>
+          </g>
+          <!-- USB-B -->
+          <g transform="translate(222, 25)">
+            <rect x="0" y="0" width="155" height="100" rx="8" fill="#1e293b" stroke="#475569"/>
+            <polygon points="48,25 107,25 117,37 117,65 38,65 38,37" fill="#090d16" stroke="#cbd5e1" stroke-width="2.5"/>
+            <rect x="58" y="40" width="39" height="12" fill="#94a3b8"/>
+            <text x="77" y="86" text-anchor="middle" fill="#cbd5e1" font-size="13" font-family="JetBrains Mono">USB Type-B</text>
+          </g>
+          <!-- USB-C (Highlighted) -->
+          <g transform="translate(410, 20)">
+            <rect x="0" y="0" width="160" height="110" rx="10" fill="#06b6d4" fill-opacity="0.2" stroke="#22d3ee" stroke-width="2.5"/>
+            <rect x="30" y="32" width="100" height="32" rx="16" fill="#090d16" stroke="#22d3ee" stroke-width="3"/>
+            <rect x="46" y="45" width="68" height="6" rx="3" fill="#fbbf24"/>
+            <text x="80" y="88" text-anchor="middle" fill="#22d3ee" font-size="14" font-weight="bold" font-family="Cairo">الموصل المشار إليه (ج)</text>
+            <text x="80" y="103" text-anchor="middle" fill="#bae6fd" font-size="11" font-family="Cairo">بيضاوي متماثل الوجهين</text>
+          </g>
+        </svg>
+      `,
+      osLayers: `
+        <svg viewBox="0 0 600 180" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="170" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <g text-anchor="middle" font-family="Cairo">
+            <rect x="100" y="18" width="400" height="32" rx="6" fill="#1e293b" stroke="#38bdf8"/>
+            <text x="300" y="39" fill="#38bdf8" font-size="13" font-weight="bold">المستخدم وتطبيقات سطح المكتب (Applications)</text>
+
+            <rect x="100" y="56" width="400" height="32" rx="6" fill="#1e293b" stroke="#a855f7"/>
+            <text x="300" y="77" fill="#c084fc" font-size="13" font-weight="bold">واجهة المستخدم الرسومية أو النصية (GUI / Shell)</text>
+
+            <rect x="100" y="94" width="400" height="36" rx="6" fill="#064e3b" stroke="#10b981" stroke-width="2.5"/>
+            <text x="300" y="117" fill="#34d399" font-size="14" font-weight="bold">الطبقة الوسطى [ ؟؟؟ ] (قلب نظام التشغيل)</text>
+
+            <rect x="100" y="136" width="400" height="30" rx="6" fill="#334155" stroke="#94a3b8"/>
+            <text x="300" y="156" fill="#f8fafc" font-size="13" font-weight="bold">العتاد المادي (CPU, RAM, Disks - Hardware)</text>
+          </g>
+        </svg>
+      `,
+      filePathTree: `
+        <svg viewBox="0 0 600 130" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="120" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <text x="300" y="35" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="Cairo">مسار الملف في نظام التشغيل Windows:</text>
+          <rect x="45" y="50" width="510" height="52" rx="8" fill="#090d16" stroke="#06b6d4" stroke-width="2"/>
+          <text x="300" y="83" text-anchor="middle" fill="#22d3ee" font-size="18" font-weight="bold" font-family="JetBrains Mono" dir="ltr">
+            C:\Users\Student\Projects\Database_Schema.sql
+          </text>
+        </svg>
+      `,
+      flowchartCondition: `
+        <svg viewBox="0 0 600 175" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="165" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <!-- Diamond Condition -->
+          <polygon points="300,20 410,75 300,130 190,75" fill="#1e293b" stroke="#fbbf24" stroke-width="2.5"/>
+          <text x="300" y="72" text-anchor="middle" fill="#fbbf24" font-size="14" font-weight="bold" font-family="JetBrains Mono">score &gt;= 60 ?</text>
+          <text x="300" y="92" text-anchor="middle" fill="#cbd5e1" font-size="11" font-family="Cairo">فحص الشرط</text>
+
+          <!-- True Branch -->
+          <path d="M410 75 L470 75" stroke="#10b981" stroke-width="2.5"/>
+          <text x="440" y="65" text-anchor="middle" fill="#34d399" font-size="12" font-family="JetBrains Mono">True</text>
+          <rect x="470" y="52" width="105" height="46" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="2"/>
+          <text x="522" y="80" text-anchor="middle" fill="#34d399" font-size="14" font-weight="bold" font-family="Cairo">ناجح (Pass)</text>
+
+          <!-- False Branch -->
+          <path d="M190 75 L130 75" stroke="#f43f5e" stroke-width="2.5"/>
+          <text x="160" y="65" text-anchor="middle" fill="#fb7185" font-size="12" font-family="JetBrains Mono">False</text>
+          <rect x="25" y="52" width="105" height="46" rx="8" fill="#4c0519" stroke="#f43f5e" stroke-width="2"/>
+          <text x="77" y="80" text-anchor="middle" fill="#fb7185" font-size="13" font-weight="bold" font-family="Cairo">يحتاج مراجعة</text>
+        </svg>
+      `,
+      arrayIndexing: `
+        <svg viewBox="0 0 600 140" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="130" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <text x="300" y="30" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="JetBrains Mono" dir="ltr">int grades[] = {75, 82, 95, 68, 90};</text>
+          <g font-family="JetBrains Mono" text-anchor="middle">
+            <!-- Index 0 -->
+            <rect x="65" y="45" width="88" height="48" rx="6" fill="#1e293b" stroke="#475569"/>
+            <text x="109" y="75" fill="#f8fafc" font-size="18" font-weight="bold">75</text>
+            <text x="109" y="114" fill="#38bdf8" font-size="12">Index [0]</text>
+            <!-- Index 1 -->
+            <rect x="161" y="45" width="88" height="48" rx="6" fill="#1e293b" stroke="#475569"/>
+            <text x="205" y="75" fill="#f8fafc" font-size="18" font-weight="bold">82</text>
+            <text x="205" y="114" fill="#38bdf8" font-size="12">Index [1]</text>
+            <!-- Index 2 -->
+            <rect x="257" y="45" width="88" height="48" rx="6" fill="#06b6d4" fill-opacity="0.25" stroke="#22d3ee" stroke-width="2"/>
+            <text x="301" y="75" fill="#22d3ee" font-size="18" font-weight="bold">95</text>
+            <text x="301" y="114" fill="#fbbf24" font-size="12" font-weight="bold">Index [2]</text>
+            <!-- Index 3 -->
+            <rect x="353" y="45" width="88" height="48" rx="6" fill="#1e293b" stroke="#475569"/>
+            <text x="397" y="75" fill="#f8fafc" font-size="18" font-weight="bold">68</text>
+            <text x="397" y="114" fill="#38bdf8" font-size="12">Index [3]</text>
+            <!-- Index 4 -->
+            <rect x="449" y="45" width="88" height="48" rx="6" fill="#1e293b" stroke="#475569"/>
+            <text x="493" y="75" fill="#f8fafc" font-size="18" font-weight="bold">90</text>
+            <text x="493" y="114" fill="#38bdf8" font-size="12">Index [4]</text>
+          </g>
+        </svg>
+      `,
+      relationalKeys: `
+        <svg viewBox="0 0 600 165" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="155" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <!-- Table 1: quizzes -->
+          <rect x="30" y="25" width="210" height="115" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <rect x="30" y="25" width="210" height="30" rx="8" fill="#0284c7"/>
+          <text x="135" y="45" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="bold" font-family="JetBrains Mono">quizzes (جدول الكويزات)</text>
+          <text x="135" y="78" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="bold" font-family="JetBrains Mono">🔑 id (PRIMARY KEY)</text>
+          <text x="135" y="105" text-anchor="middle" fill="#cbd5e1" font-size="12" font-family="JetBrains Mono">title NVARCHAR(160)</text>
+
+          <!-- Relation Line -->
+          <path d="M240 75 L345 95" stroke="#10b981" stroke-width="3" stroke-dasharray="5,3"/>
+
+          <!-- Table 2: student_submissions -->
+          <rect x="345" y="25" width="225" height="115" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+          <rect x="345" y="25" width="225" height="30" rx="8" fill="#059669"/>
+          <text x="457" y="45" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="bold" font-family="JetBrains Mono">student_submissions</text>
+          <text x="457" y="75" text-anchor="middle" fill="#cbd5e1" font-size="12" font-family="JetBrains Mono">🔑 id (PRIMARY KEY)</text>
+          <text x="457" y="100" text-anchor="middle" fill="#34d399" font-size="13" font-weight="bold" font-family="JetBrains Mono">🔗 quiz_id [ ؟؟؟ ]</text>
+          <text x="457" y="122" text-anchor="middle" fill="#cbd5e1" font-size="12" font-family="JetBrains Mono">score INT</text>
+        </svg>
+      `,
+      sqlQueryVisual: `
+        <svg viewBox="0 0 600 135" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="125" rx="12" fill="#090d16" stroke="#334155" stroke-width="2"/>
+          <text x="30" y="38" fill="#38bdf8" font-size="15" font-weight="bold" font-family="JetBrains Mono" dir="ltr">SELECT student_name, percentage, grade</text>
+          <text x="30" y="65" fill="#34d399" font-size="15" font-weight="bold" font-family="JetBrains Mono" dir="ltr">FROM student_submissions</text>
+          <text x="30" y="92" fill="#fbbf24" font-size="15" font-weight="bold" font-family="JetBrains Mono" dir="ltr">WHERE percentage &gt;= 85;</text>
+        </svg>
+      `,
+      ciaTriad: `
+        <svg viewBox="0 0 600 185" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="175" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <polygon points="300,25 415,145 185,145" fill="#06b6d4" fill-opacity="0.12" stroke="#22d3ee" stroke-width="3"/>
+          <text x="300" y="105" text-anchor="middle" fill="#f8fafc" font-size="14" font-weight="bold" font-family="Cairo">مثلث CIA الأمني</text>
+          <!-- Top: Confidentiality -->
+          <rect x="215" y="10" width="170" height="28" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+          <text x="300" y="29" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="bold" font-family="Cairo">1. السرية (Confidentiality)</text>
+          <!-- Bottom Right: Integrity -->
+          <rect x="370" y="142" width="185" height="30" rx="6" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
+          <text x="462" y="162" text-anchor="middle" fill="#34d399" font-size="13" font-weight="bold" font-family="Cairo">2. السلامة (Integrity)</text>
+          <!-- Bottom Left: Availability ? -->
+          <rect x="45" y="142" width="185" height="30" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="2"/>
+          <text x="137" y="162" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="bold" font-family="Cairo">3. الركن الثالث: [ ؟؟؟ ]</text>
+        </svg>
+      `,
+      firewallDiagram: `
+        <svg viewBox="0 0 600 165" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="155" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <!-- Internet -->
+          <circle cx="95" cy="82" r="45" fill="#1e293b" stroke="#f43f5e" stroke-width="2"/>
+          <text x="95" y="78" text-anchor="middle" fill="#fb7185" font-size="13" font-weight="bold" font-family="Cairo">شبكة الإنترنت</text>
+          <text x="95" y="96" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Cairo">(خارجية غير موثوقة)</text>
+
+          <!-- Arrows -->
+          <path d="M145 65 L255 65" stroke="#10b981" stroke-width="3"/>
+          <text x="200" y="56" text-anchor="middle" fill="#34d399" font-size="11" font-family="Cairo">حزم مسموحة ✓</text>
+          <path d="M145 102 L255 102" stroke="#f43f5e" stroke-width="3" stroke-dasharray="4,4"/>
+          <text x="200" y="120" text-anchor="middle" fill="#fb7185" font-size="11" font-family="Cairo">حزم خبيثة محظورة ✕</text>
+
+          <!-- Firewall Brick Wall -->
+          <rect x="265" y="25" width="65" height="115" rx="6" fill="#991b1b" stroke="#f87171" stroke-width="2.5"/>
+          <line x1="265" y1="55" x2="330" y2="55" stroke="#fca5a5" stroke-width="2"/>
+          <line x1="265" y1="85" x2="330" y2="85" stroke="#fca5a5" stroke-width="2"/>
+          <line x1="265" y1="115" x2="330" y2="115" stroke="#fca5a5" stroke-width="2"/>
+          <text x="297" y="153" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="bold" font-family="Cairo">[ ؟؟؟ ]</text>
+
+          <!-- Allowed arrow to LAN -->
+          <path d="M335 65 L435 65" stroke="#10b981" stroke-width="3"/>
+
+          <!-- Internal LAN -->
+          <rect x="440" y="38" width="125" height="88" rx="10" fill="#064e3b" fill-opacity="0.35" stroke="#10b981" stroke-width="2"/>
+          <text x="502" y="78" text-anchor="middle" fill="#34d399" font-size="13" font-weight="bold" font-family="Cairo">الشبكة الداخلية</text>
+          <text x="502" y="98" text-anchor="middle" fill="#a7f3d0" font-size="11" font-family="JetBrains Mono">(Trusted LAN)</text>
+        </svg>
+      `,
+      mfaDiagram: `
+        <svg viewBox="0 0 600 155" class="w-full max-w-xl h-auto">
+          <rect x="5" y="5" width="590" height="145" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <!-- Factor 1 -->
+          <rect x="25" y="28" width="160" height="98" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <text x="105" y="60" text-anchor="middle" fill="#38bdf8" font-size="14" font-weight="bold" font-family="Cairo">1. شيء تعرفه</text>
+          <text x="105" y="84" text-anchor="middle" fill="#e2e8f0" font-size="12" font-family="Cairo">كلمة المرور (Password)</text>
+          <text x="105" y="106" text-anchor="middle" fill="#64748b" font-size="11" font-family="JetBrains Mono">******</text>
+
+          <text x="205" y="82" text-anchor="middle" fill="#fbbf24" font-size="22" font-weight="bold">+</text>
+
+          <!-- Factor 2 -->
+          <rect x="225" y="28" width="160" height="98" rx="10" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+          <text x="305" y="60" text-anchor="middle" fill="#34d399" font-size="14" font-weight="bold" font-family="Cairo">2. شيء تملكه</text>
+          <text x="305" y="84" text-anchor="middle" fill="#e2e8f0" font-size="12" font-family="Cairo">رمز الهاتف المؤقت OTP</text>
+          <text x="305" y="106" text-anchor="middle" fill="#34d399" font-size="11" font-family="JetBrains Mono">482-910</text>
+
+          <text x="405" y="82" text-anchor="middle" fill="#fbbf24" font-size="22" font-weight="bold">+</text>
+
+          <!-- Factor 3 -->
+          <rect x="425" y="28" width="150" height="98" rx="10" fill="#1e293b" stroke="#a855f7" stroke-width="2"/>
+          <text x="500" y="60" text-anchor="middle" fill="#c084fc" font-size="14" font-weight="bold" font-family="Cairo">3. شيء يمثلك</text>
+          <text x="500" y="84" text-anchor="middle" fill="#e2e8f0" font-size="12" font-family="Cairo">بصمة الإصبع أو الوجه</text>
+          <text x="500" y="106" text-anchor="middle" fill="#c084fc" font-size="11" font-family="JetBrains Mono">Biometrics</text>
+        </svg>
+      `
+    };
+
+    /*************************************************************************
+     * 3. 40 AUTHENTIC COMPTIA ITF+ (FC0-U61) QUESTIONS (EASY & MEDIUM)
+     *************************************************************************/
+    const QUIZ_QUESTIONS = [
+      // --- DOMAIN 1: IT CONCEPTS & TERMINOLOGY (1 - 7) ---
+      {
+        id: 1,
+        domain: 'مفاهيم تقنية المعلومات',
+        difficulty: 'متوسط',
+        text: 'بالنظر إلى جدول الخانات الثنائية (Binary) الموضح في الشكل، ما هي القيمة العشرية (Decimal) المكافئة للرقم الثنائي 00101010؟',
+        svgKey: 'binaryTable',
+        visualCaption: 'تحويل العدد الثنائي 00101010 إلى النظام العشري',
+        options: ['38', '42', '44', '50'],
+        correctOption: 1,
+        explanation: 'نجمع أوزان الخانات التي تحتوي على الرقم (1) فقط: 32 + 8 + 2 = 42.'
+      },
+      {
+        id: 2,
+        domain: 'مفاهيم تقنية المعلومات',
+        difficulty: 'سهل',
+        text: 'ما هي أصغر وحدة لتمثيل البيانات في الحاسوب، والتي تأخذ إحدى القيمتين (0 أو 1) فقط؟',
+        options: ['البايت (Byte)', 'البت (Bit)', 'الكيلوبايت (Kilobyte)', 'الهيرتز (Hertz)'],
+        correctOption: 1,
+        explanation: 'البت (Bit - Binary Digit) هو أصغر وحدة بيانات في الحاسوب ويمثل 0 أو 1، بينما البايت (Byte) يتكون من 8 بتات.'
+      },
+      {
+        id: 3,
+        domain: 'مفاهيم تقنية المعلومات',
+        difficulty: 'سهل',
+        text: 'يمثل المخطط التالي دورة الحوسبة الأساسية (IPOS). ما هي المرحلة رقم (2) المفقودة التي يقوم بها المعالج (CPU) لتحويل البيانات المدخلة إلى معلومات مفيدة؟',
+        svgKey: 'iposCycle',
+        visualCaption: 'مخطط دورة الحوسبة الأساسية (Input - ? - Output - Storage)',
+        options: ['الضغط (Compression)', 'المعالجة (Processing)', 'التشفير (Encryption)', 'النسخ الاحتياطي (Backup)'],
+        correctOption: 1,
+        explanation: 'دورة العمل الأساسية في الحاسوب تتكون من: الإدخال (Input)، ثم المعالجة (Processing) بواسطة CPU، ثم الإخراج (Output)، والتخزين (Storage).'
+      },
+      {
+        id: 4,
+        domain: 'مفاهيم تقنية المعلومات',
+        difficulty: 'سهل',
+        text: 'كم عدد البتات (Bits) الموجودة في بايت واحد (1 Byte) قياسي؟',
+        options: ['4 بتات', '8 بتات', '16 بت', '1024 بت'],
+        correctOption: 1,
+        explanation: 'البايت الواحد (1 Byte) يتكون قياسياً من 8 بتات (8 Bits).'
+      },
+      {
+        id: 5,
+        domain: 'مفاهيم تقنية المعلومات',
+        difficulty: 'متوسط',
+        text: 'وفقاً لمنهجية CompTIA القياسية لاستكشاف الأخطاء وإصلاحها (Troubleshooting Methodology)، ما هي الخطوة الأولى التي يجب على الفني القيام بها عند الإبلاغ عن عطل؟',
+        options: [
+          'وضع نظرية للأسباب المحتملة فوراً',
+          'تحديد المشكلة (Identify the problem) وجمع المعلومات من المستخدم',
+          'استبدال قطع العتاد المشكوك فيها',
+          'توثيق النتائج والحلول'
+        ],
+        correctOption: 1,
+        explanation: 'الخطوة الأولى دائماً في منهجية CompTIA هي تحديد المشكلة (Identify the problem) عبر سؤال المستخدم ومراجعة الأعراض.'
+      },
+      {
+        id: 6,
+        domain: 'البنية التحتية والعتاد',
+        difficulty: 'سهل',
+        text: 'في الرسم التوضيحي لمنافذ العرض، ما هو اسم المنفذ رقم (ب) الذي ينقل الصوت والصورة الرقمية معاً بجودة عالية ويشيع استخدامه في الشاشات والتلفاز؟',
+        svgKey: 'videoPorts',
+        visualCaption: 'مقارنة أشكال منافذ العرض: (أ) VGA، (ب) ؟، (ج) DisplayPort',
+        options: ['منفذ VGA التناظري', 'منفذ HDMI', 'منفذ DVI-D', 'منفذ PS/2'],
+        correctOption: 1,
+        explanation: 'المنفذ (ب) هو منفذ HDMI (High-Definition Multimedia Interface) الذي يتميز بحواف مشطوفة من الجانبين السفليين وينقل الصوت والصورة رقمياً.'
+      },
+      {
+        id: 7,
+        domain: 'مفاهيم تقنية المعلومات',
+        difficulty: 'متوسط',
+        text: 'أي نظام عدّ يستخدم الأرقام من (0 إلى 9) والحروف من (A إلى F) لتمثيل القيم ويُستخدم بكثرة في عناوين MAC وأكواد الألوان؟',
+        options: [
+          'النظام الثنائي (Binary)',
+          'النظام العشري (Decimal)',
+          'النظام السداسي عشري (Hexadecimal)',
+          'النظام الثماني (Octal)'
+        ],
+        correctOption: 2,
+        explanation: 'النظام السداسي عشري (Hexadecimal - Base 16) يستخدم 16 رمزاً: من 0-9 ومن A-F.'
+      },
+
+      // --- DOMAIN 2: INFRASTRUCTURE & HARDWARE (8 - 17) ---
+      {
+        id: 8,
+        domain: 'البنية التحتية والعتاد',
+        difficulty: 'سهل',
+        text: 'بالنظر إلى مخطط اللوحة الأم (Motherboard)، ما هي القطعة التي تركب في الشقوق الطولية المشار إليها بالرقم (2)؟',
+        svgKey: 'motherboardDiagram',
+        visualCaption: 'تخطيط المكونات الأساسية على اللوحة الأم (Motherboard)',
+        options: [
+          'شرائح ذاكرة الوصول العشوائي (RAM DIMMs)',
+          'مزود الطاقة (Power Supply)',
+          'القرص الصلب الميكانيكي (HDD)',
+          'المشتت الحراري (Heat Sink)'
+        ],
+        correctOption: 0,
+        explanation: 'الشقوق الطولية المتوازية رقم (2) المجاورة لمقبس المعالج هي شقوق DIMM المخصصة لتركيب ذاكرة الوصول العشوائي (RAM).'
+      },
+      {
+        id: 9,
+        domain: 'البنية التحتية والعتاد',
+        difficulty: 'سهل',
+        text: 'أي من الذاكرات التالية تُعد ذاكرة "متطايرة" (Volatile Memory) تفقد جميع بياناتها فور انقطاع التيار الكهربائي عن الحاسوب؟',
+        options: [
+          'القرص الصلب (SSD)',
+          'ذاكرة الوصول العشوائي (RAM)',
+          'ذاكرة القراءة فقط (ROM)',
+          'محرك الفلاش (USB Flash Drive)'
+        ],
+        correctOption: 1,
+        explanation: 'ذاكرة RAM هي ذاكرة مؤقتة متطايرة (Volatile) تحتفظ ببيانات البرامج قيد التشغيل فقط طالما الجهاز متصل بالكهرباء.'
+      },
+      {
+        id: 10,
+        domain: 'البنية التحتية والعتاد',
+        difficulty: 'سهل',
+        text: 'يوضح الشكل الفرق بين موصلين شهيرين. ما هو اسم الموصل (أ) ذو الـ 8 دبابيس نحاسية المستخدم في كابلات شبكات الإيثرنت (Ethernet LAN)؟',
+        svgKey: 'rj45VsRj11',
+        visualCaption: 'مقارنة بين موصل الشبكة (أ) وموصل الهاتف (ب)',
+        options: ['RJ-11', 'RJ-45', 'Coaxial F-Connector', 'Thunderbolt'],
+        correctOption: 1,
+        explanation: 'الموصل (أ) هو RJ-45 (8P8C) ويحتوي على 8 دبابيس ويستخدم في كابلات الشبكات المحلية، بينما RJ-11 يستخدم في خطوط الهاتف.'
+      },
+      {
+        id: 11,
+        domain: 'البنية التحتية والعتاد',
+        difficulty: 'متوسط',
+        text: 'ما هي الوظيفة الأساسية لبرمجية BIOS أو UEFI المخزنة على اللوحة الأم عند تشغيل الحاسوب؟',
+        options: [
+          'حماية المتصفح من الإعلانات المنبثقة',
+          'إجراء الفحص الذاتي للعتاد (POST) وتهيئة المكونات ثم تحميل نظام التشغيل',
+          'تصميم قواعد البيانات العلائقية',
+          'ترجمة صفحات HTML في المتصفح'
+        ],
+        correctOption: 1,
+        explanation: 'يقوم BIOS/UEFI بإجراء فحص POST (Power-On Self-Test) للتأكد من سلامة العتاد ثم يبحث عن محمل الإقلاع لتشغيل نظام التشغيل.'
+      },
+      {
+        id: 12,
+        domain: 'البنية التحتية والعتاد',
+        difficulty: 'سهل',
+        text: 'بناءً على الرسم التوضيحي لوحدات التخزين، ما الذي يميز القرص (ب) من نوع SSD مقارنة بالقرص (أ) من نوع HDD؟',
+        svgKey: 'ssdVsHdd',
+        visualCaption: 'مقارنة التركيب الداخلي بين (أ) HDD و (ب) SSD',
+        options: [
+          'القرص (ب) أبطأ ويستهلك طاقة أكبر',
+          'القرص (ب) لا يحتوي على أجزاء متحركة ويعتمد على شرائح فلاش لذلك هو أسرع وأكثر مقاومة للصدمات',
+          'القرص (ب) يستخدم أقراصاً ممغنطة تدور بسرعة 7200 دورة في الدقيقة',
+          'القرص (ب) يفقد البيانات عند إيقاف تشغيل الجهاز'
+        ],
+        correctOption: 1,
+        explanation: 'أقراص الحالة الصلبة (SSD) تعتمد على شرائح ذاكرة NAND Flash ولا تحتوي على أجزاء ميكانيكية متحركة، مما يمنحها سرعة عالية ومقاومة للصدمات.'
+      },
+      {
+        id: 13,
+        domain: 'البنية التحتية والعتاد',
+        difficulty: 'سهل',
+        text: 'ما هي وظيفة مزود الطاقة (PSU - Power Supply Unit) في الحاسوب المكتبي؟',
+        options: [
+          'تحويل التيار المتردد (AC) القادم من الحائط إلى تيار مستمر (DC) منخفض الجهد لمكونات الحاسوب',
+          'تخزين ملفات نظام التشغيل بشكل دائم',
+          'معالجة الرسوميات ثلاثية الأبعاد',
+          'توزيع عناوين IP للأجهزة المتصلة'
+        ],
+        correctOption: 0,
+        explanation: 'يقوم مزود الطاقة (PSU) بتحويل التيار المتردد (AC) من مقبس الكهرباء إلى تيار مستمر (DC) بفولتيات مناسبة (مثل 3.3V, 5V, 12V) لتغذية قطع الحاسوب.'
+      },
+      {
+        id: 14,
+        domain: 'البنية التحتية والعتاد',
+        difficulty: 'متوسط',
+        text: 'ما هي وحدة قياس سرعة التردد أو الساعة (Clock Speed) للمعالج المركزي (CPU) الحديثة؟',
+        options: ['الجيجابايت (Gigabyte - GB)', 'الجيجاهيرتز (Gigahertz - GHz)', 'الميجابكسل (Megapixel - MP)', 'الواط (Watt)'],
+        correctOption: 1,
+        explanation: 'تقاس سرعة المعالج بعدد الدورات في الثانية بوحدة الهيرتز، وفي المعالجات الحديثة تقاس بالجيجاهيرتز (GHz).'
+      },
+      {
+        id: 15,
+        domain: 'البنية التحتية والعتاد',
+        difficulty: 'سهل',
+        text: 'في الشكل المرفق لموصلات USB، ما هو اسم الموصل (ج) الذي يتميز بتصميم بيضاوي متماثل يمكن إدخاله من أي وجه (Reversible)؟',
+        svgKey: 'usbConnectors',
+        visualCaption: 'مقارنة أشكال موصلات الناقل التسلسلي العام (USB)',
+        options: ['USB Type-A', 'USB Type-B', 'USB Type-C', 'Mini-USB'],
+        correctOption: 2,
+        explanation: 'الموصل (ج) هو USB Type-C الذي يتميز بقابليته للتوصيل من كلا الوجهين ودعمه لسرعات نقل بيانات وشحن طاقة عالية.'
+      },
+      {
+        id: 16,
+        domain: 'البنية التحتية والعتاد',
+        difficulty: 'سهل',
+        text: 'أي من الأجهزة الطرفية التالية يُصنف كجهاز "إدخال وإخراج معاً" (Input & Output Device)؟',
+        options: [
+          'لوحة المفاتيح القياسية (Keyboard)',
+          'شاشة اللمس التفاعلية (Touchscreen)',
+          'الميكروفون (Microphone)',
+          'مكبر الصوت (Speaker)'
+        ],
+        correctOption: 1,
+        explanation: 'شاشة اللمس (Touchscreen) تعرض الصورة للمستخدم (إخراج) وتستقبل نقرات اللمس منه (إدخال) في آنٍ واحد.'
+      },
+      {
+        id: 17,
+        domain: 'البنية التحتية والعتاد',
+        difficulty: 'متوسط',
+        text: 'ما هي التقنية اللاسلكية قصيرة المدى جداً (عادة بضعة سنتيمترات) التي تُستخدم في الدفع الإلكتروني عبر الهواتف والبطاقات الذكية؟',
+        options: ['Wi-Fi 6', 'NFC (الاتصال قريب المدى)', 'Satellite', 'Ethernet'],
+        correctOption: 1,
+        explanation: 'تقنية NFC (Near Field Communication) تعمل على مسافات قريبة جداً (أقل من 4 سم) وتُستخدم في أنظمة الدفع اللاتلامسي.'
+      },
+
+      // --- DOMAIN 3: APPLICATIONS & OPERATING SYSTEMS (18 - 23) ---
+      {
+        id: 18,
+        domain: 'التطبيقات وأنظمة التشغيل',
+        difficulty: 'متوسط',
+        text: 'يوضح الشكل طبقات نظام التشغيل. ما هو المصطلح التقني للطبقة الوسطى الخضراء التي تمثل "قلب نظام التشغيل" المسؤول عن التواصل المباشر مع العتاد؟',
+        svgKey: 'osLayers',
+        visualCaption: 'مخطط الطبقات المعمارية لنظام التشغيل',
+        options: [
+          'المتصفح (Browser)',
+          'النواة (Kernel)',
+          'جدول البيانات (Spreadsheet)',
+          'جدار الحماية (Firewall)'
+        ],
+        correctOption: 1,
+        explanation: 'النواة (Kernel) هي الجزء الأساسي في نظام التشغيل الذي يدير موارد العتاد (CPU, RAM, I/O) ويربط البرمجيات بالمكونات المادية.'
+      },
+      {
+        id: 19,
+        domain: 'التطبيقات وأنظمة التشغيل',
+        difficulty: 'سهل',
+        text: 'أي من أنظمة التشغيل التالية يُعد نظاماً مفتوح المصدر (Open Source) شائع الاستخدام في الخوادم وأجهزة الشبكات؟',
+        options: ['Microsoft Windows 11', 'Apple macOS', 'Linux (لينكس)', 'Apple iOS'],
+        correctOption: 2,
+        explanation: 'نظام Linux هو نظام تشغيل مفتوح المصدر (Open Source) يمكن الاطلاع على كوده المصدري وتعديله وتوزيعه مجاناً.'
+      },
+      {
+        id: 20,
+        domain: 'التطبيقات وأنظمة التشغيل',
+        difficulty: 'متوسط',
+        text: 'ما هو نظام الملفات (File System) الافتراضي والحديث الذي يعتمد عليه نظام التشغيل Microsoft Windows في الأقراص الداخلية ويدعم الصلاحيات الأمنية والتشفير؟',
+        options: ['FAT16', 'NTFS', 'ext4', 'APFS'],
+        correctOption: 1,
+        explanation: 'نظام NTFS (New Technology File System) هو النظام الافتراضي لـ Windows، بينما ext4 خاص بلينكس و APFS خاص بأجهزة أبل.'
+      },
+      {
+        id: 21,
+        domain: 'التطبيقات وأنظمة التشغيل',
+        difficulty: 'سهل',
+        text: 'بالنظر إلى مسار الملف الموضح في الصورة، ما هو امتداد الملف (File Extension) الذي يحدد نوع الملف والبرنامج المناسب لفتحه؟',
+        svgKey: 'filePathTree',
+        visualCaption: 'تحليل مسار الملف في نظام التشغيل',
+        options: ['C:\\', 'Projects', '.sql', 'Users'],
+        correctOption: 2,
+        explanation: 'الجزء الأخير بعد النقطة (.sql) هو امتداد الملف (File Extension) ويشير إلى أن الملف عبارة عن نص أوامر لغة SQL.'
+      },
+      {
+        id: 22,
+        domain: 'التطبيقات وأنظمة التشغيل',
+        difficulty: 'سهل',
+        text: 'ما هو البرنامج الصغير المتخصص الذي يُمكّن نظام التشغيل من التعرف على قطعة عتاد جديدة (مثل طابعة أو بطاقة شاشة) والتخاطب معها؟',
+        options: [
+          'برنامج التعريف (Device Driver)',
+          'معالج النصوص (Word Processor)',
+          'برنامج الضغط (File Archiver)',
+          'محرك البحث (Search Engine)'
+        ],
+        correctOption: 0,
+        explanation: 'برنامج التعريف (Device Driver) يعمل كمترجم بين نظام التشغيل وقطعة العتاد المادية.'
+      },
+      {
+        id: 23,
+        domain: 'التطبيقات وأنظمة التشغيل',
+        difficulty: 'متوسط',
+        text: 'ما هو نموذج الحوسبة السحابية الذي يقدم للمستخدم تطبيقاً جاهزاً للاستخدام مباشرة عبر المتصفح (مثل Google Docs أو Microsoft 365 Web) دون تثبيته محلياً؟',
+        options: [
+          'البرمجيات كخدمة (SaaS - Software as a Service)',
+          'البنية التحتية كخدمة (IaaS)',
+          'الذاكرة المؤقتة (Cache)',
+          'الشبكة الشخصية (PAN)'
+        ],
+        correctOption: 0,
+        explanation: 'نموذج SaaS (Software as a Service) يتيح للمستخدمين الوصول للتطبيقات عبر الإنترنت مباشرة عبر المتصفح.'
+      },
+
+      // --- DOMAIN 4: SOFTWARE DEVELOPMENT CONCEPTS (24 - 28) ---
+      {
+        id: 24,
+        domain: 'مفاهيم تطوير البرمجيات',
+        difficulty: 'سهل',
+        text: 'في لغات البرمجة، ما هو نوع البيانات (Data Type) الأنسب لتخزين قيمة منطقية تحتمل "صواب أو خطأ" (True / False) كما في حقل isCorrect؟',
+        options: [
+          'Integer (عدد صحيح)',
+          'Boolean (منطقي)',
+          'Float (عدد عشري)',
+          'Char (حرف واحد)'
+        ],
+        correctOption: 1,
+        explanation: 'النوع المنطقي (Boolean) يخزن إحدى القيمتين فقط: True (صحيح) أو False (خاطئ).'
+      },
+      {
+        id: 25,
+        domain: 'مفاهيم تطوير البرمجيات',
+        difficulty: 'سهل',
+        text: 'يمثل المخطط الانسيابي (Flowchart) في الشكل اتخاذ قرار بناءً على شرط معين. أي من تراكيب البرمجة التالية يمثل هذا المنطق؟',
+        svgKey: 'flowchartCondition',
+        visualCaption: 'مخطط انسيابي لفحص شرط النجاح',
+        options: [
+          'الجمل الشرطية والتفرع (If / Else Conditional Branching)',
+          'تعريف الثوابت (Constants)',
+          'التعليقات البرمجية (Comments)',
+          'استيراد المكتبات (Imports)'
+        ],
+        correctOption: 0,
+        explanation: 'الشكل المعين في المخطط الانسيابي يمثل جملة شرطية (If / Else) توجه مسار البرنامج حسب تحقق الشرط (True أو False).'
+      },
+      {
+        id: 26,
+        domain: 'مفاهيم تطوير البرمجيات',
+        difficulty: 'متوسط',
+        text: 'ما هو التركيب البرمجي الذي يُستخدم لتكرار تنفيذ مجموعة من الأوامر عدة مرات طالما أن شرطاً معيناً ما زال محققاً؟',
+        options: [
+          'الحلقات التكرارية (Loops - مثل For و While)',
+          'المتغيرات النصية (Strings)',
+          'المترجمات (Compilers)',
+          'المعرفات الفريدة (UUIDs)'
+        ],
+        correctOption: 0,
+        explanation: 'الحلقات التكرارية (Loops) مثل For Loop و While Loop تُستخدم لتكرار كود معين دون الحاجة لإعادة كتابته.'
+      },
+      {
+        id: 27,
+        domain: 'مفاهيم تطوير البرمجيات',
+        difficulty: 'سهل',
+        text: 'في تطوير الويب، ما هي اللغة المسؤولة عن بناء الهيكل الأساسي وعناصر صفحة الويب (مثل العناوين، الفقرات، والجداول)؟',
+        options: ['SQL', 'HTML (لغة توصيف النص الفائق)', 'BIOS', 'DHCP'],
+        correctOption: 1,
+        explanation: 'لغة HTML (HyperText Markup Language) هي اللغة القياسية لبناء هيكل ومحتوى صفحات الويب.'
+      },
+      {
+        id: 28,
+        domain: 'مفاهيم تطوير البرمجيات',
+        difficulty: 'متوسط',
+        text: 'بالاعتماد على الرسم التوضيحي للمصفوفة (Array) التي تبدأ فهرستها من الصفر (Zero-indexed)، ما هي القيمة المخزنة في العنصر grades[2]؟',
+        svgKey: 'arrayIndexing',
+        visualCaption: 'تمثيل عناصر المصفوفة وفهارسها في الذاكرة',
+        options: ['75', '82', '95', '68'],
+        correctOption: 2,
+        explanation: 'بما أن الفهرسة تبدأ من 0: فإن grades[0]=75، و grades[1]=82، وبالتالي العنصر الثالث grades[2] قيمته 95.'
+      },
+
+      // --- DOMAIN 5: DATABASE FUNDAMENTALS & SQL (29 - 34) ---
+      {
+        id: 29,
+        domain: 'أساسيات قواعد البيانات و SQL',
+        difficulty: 'سهل',
+        text: 'في قواعد البيانات العلائقية (Relational Databases)، ماذا يمثل "الصف الواحد" (Row) داخل الجدول؟',
+        options: [
+          'سجلاً واحداً متكاملاً (Record / Tuple) مثل محاولة طالب واحدة',
+          'نوع بيانات العمود (Data Type)',
+          'اسم قاعدة البيانات بالكامل',
+          'كلمة مرور الخادم'
+        ],
+        correctOption: 0,
+        explanation: 'الصف (Row) في الجدول العلائقي يُسمى سجلاً (Record)، بينما العمود (Column) يُسمى حقلاً (Field / Attribute).'
+      },
+      {
+        id: 30,
+        domain: 'أساسيات قواعد البيانات و SQL',
+        difficulty: 'متوسط',
+        text: 'في مخطط جدول نتائج الاختبار المرفق، الحقل quiz_id في جدول student_submissions يشير إلى الحقل id في جدول quizzes. ماذا يُسمى quiz_id في هذه الحالة؟',
+        svgKey: 'relationalKeys',
+        visualCaption: 'العلاقة بين جدول الكويزات وجدول تسليمات الطلاب',
+        options: [
+          'مفتاح أجنبي (Foreign Key)',
+          'مفتاح عشوائي (Random Key)',
+          'مفتاح تشفير (Encryption Key)',
+          'فهرس نصي (Text Index)'
+        ],
+        correctOption: 0,
+        explanation: 'المفتاح الأجنبي (Foreign Key) هو حقل في جدول يشير إلى المفتاح الأساسي (Primary Key) في جدول آخر لإنشاء علاقة ترابطية بينهما.'
+      },
+      {
+        id: 31,
+        domain: 'أساسيات قواعد البيانات و SQL',
+        difficulty: 'سهل',
+        text: 'أي من أوامر لغة SQL التالية يُستخدم لإضافة سجل جديد (صف جديد) داخل جدول student_submissions؟',
+        options: [
+          'SELECT * FROM student_submissions',
+          'INSERT INTO student_submissions VALUES (...)',
+          'DROP TABLE student_submissions',
+          'DELETE FROM student_submissions'
+        ],
+        correctOption: 1,
+        explanation: 'الأمر INSERT INTO هو أمر معالجة البيانات (DML) المخصص لإدراج صفوف جديدة في الجدول.'
+      },
+      {
+        id: 32,
+        domain: 'أساسيات قواعد البيانات و SQL',
+        difficulty: 'سهل',
+        text: 'ما هي نتيجة تنفيذ استعلام SQL الموضح في الشكل على جدول student_submissions؟',
+        svgKey: 'sqlQueryVisual',
+        visualCaption: 'استعلام SQL مع شرط تصفية WHERE',
+        options: [
+          'حذف جميع الطلاب الذين حصلوا على نسبة 85% فأعلى',
+          'عرض أسماء ونسب وتقديرات الطلاب الذين حصلوا على نسبة 85% فأعلى فقط',
+          'تعديل درجات جميع الطلاب لتصبح 85%',
+          'إنشاء جدول جديد باسم percentage'
+        ],
+        correctOption: 1,
+        explanation: 'الأمر SELECT يسترجع الحقول المحددة، وجملة WHERE percentage >= 85 تصفي النتائج لتعرض فقط من نسبتهم 85% فأكثر.'
+      },
+      {
+        id: 33,
+        domain: 'أساسيات قواعد البيانات و SQL',
+        difficulty: 'متوسط',
+        text: 'في هيكلية جدول student_submissions، ماذا يضمن القيد UNIQUE (quiz_id, student_id) في قاعدة البيانات؟',
+        options: [
+          'أن تكون درجة الطالب دائماً 100%',
+          'منع نفس الطالب (student_id) من تسجيل أكثر من محاولة واحدة لنفس الاختبار (quiz_id)',
+          'السماح بترك حقل اسم الطالب فارغاً (NULL)',
+          'حذف الجدول تلقائياً بعد انتهاء الوقت'
+        ],
+        correctOption: 1,
+        explanation: 'القيد المركب UNIQUE (quiz_id, student_id) يمنع تكرار نفس الزوج من معرف الاختبار والرقم الجامعي للطالب، مما يضمن محاولة واحدة لكل كويز.'
+      },
+      {
+        id: 34,
+        domain: 'أساسيات قواعد البيانات و SQL',
+        difficulty: 'متوسط',
+        text: 'في جدول student_submissions، تم تعريف الحقل answers بنوع البيانات JSONB. ما هي الميزة الرئيسية لهذا النوع؟',
+        options: [
+          'يقبل الأرقام الصحيحة السالبة فقط',
+          'تخزين البيانات المهيكلة (كائنات ومصفوفات JSON) بصيغة ثنائية مفهرسة وسريعة الاستعلام',
+          'يمنع قراءة البيانات من قبل المسؤول',
+          'يستخدم لتخزين الملفات الصوتية فقط'
+        ],
+        correctOption: 1,
+        explanation: 'نوع JSONB (Binary JSON) يخزن مصفوفات وكائنات JSON بكفاءة عالية مع دعم الفهرسة والبحث السريع داخل عناصر المصفوفة.'
+      },
+
+      // --- DOMAIN 6: SECURITY & NETWORKING (35 - 40) ---
+      {
+        id: 35,
+        domain: 'أمن المعلومات والشبكات',
+        difficulty: 'سهل',
+        text: 'يوضح الشكل مثلث أمن المعلومات الشهير (CIA Triad). إذا كان الضلع الأول هو السرية (Confidentiality) والثاني هو السلامة (Integrity)، فما هو الضلع الثالث المفقود؟',
+        svgKey: 'ciaTriad',
+        visualCaption: 'نموذج مثلث أمن المعلومات (CIA Triad)',
+        options: [
+          'التوافر / الإتاحة (Availability)',
+          'الأتمتة (Automation)',
+          'الافتراضية (Virtualization)',
+          'التجميع (Aggregation)'
+        ],
+        correctOption: 0,
+        explanation: 'مثلث CIA يتكون من: Confidentiality (السرية)، Integrity (سلامة البيانات)، و Availability (التوافر عند الحاجة).'
+      },
+      {
+        id: 36,
+        domain: 'أمن المعلومات والشبكات',
+        difficulty: 'سهل',
+        text: 'ما هو نوع الهجوم السيبراني الذي يعتمد على إرسال رسائل بريد إلكتروني مزيفة تبدو وكأنها من جهة موثوقة (مثل البنك أو الجامعة) لخداع المستخدم وسرقة بيانات دخوله؟',
+        options: [
+          'التصيد الاحتيالي (Phishing)',
+          'إلغاء التجزئة (Defragmentation)',
+          'النسخ الاحتياطي التفاضلي (Differential Backup)',
+          'تعدد المهام (Multitasking)'
+        ],
+        correctOption: 0,
+        explanation: 'التصيد الاحتيالي (Phishing) هو أحد أشهر أساليب الهندسة الاجتماعية لخداع المستخدمين وكشف كلمات المرور.'
+      },
+      {
+        id: 37,
+        domain: 'أمن المعلومات والشبكات',
+        difficulty: 'سهل',
+        text: 'في مخطط حماية الشبكة الموضح، ما هو النظام الأمني الذي يقع بين الإنترنت والشبكة الداخلية لمراقبة حركة البيانات وحظر الحزم غير المصرح بها؟',
+        svgKey: 'firewallDiagram',
+        visualCaption: 'تصفية حزم البيانات بين الشبكة الخارجية والداخلية',
+        options: [
+          'جدار الحماية (Firewall)',
+          'الموزع البسيط (Hub)',
+          'ذاكرة الكاش (Cache Memory)',
+          'محول الطاقة (Inverter)'
+        ],
+        correctOption: 0,
+        explanation: 'جدار الحماية (Firewall) يفحص حزم البيانات الواردة والصادرة ويسمح أو يحظر المرور بناءً على قواعد أمنية محددة.'
+      },
+      {
+        id: 38,
+        domain: 'أمن المعلومات والشبكات',
+        difficulty: 'متوسط',
+        text: 'ما هو الفرق الجوهري بين "المصادقة" (Authentication) و"التفويض" (Authorization) في أمن الأنظمة؟',
+        options: [
+          'لا يوجد فرق بينهما نهائياً',
+          'المصادقة تتحقق من هوية المستخدم (من أنت؟)، بينما التفويض يحدد الصلاحيات المسموحة له بعد دخوله (ماذا يحق لك فعله؟)',
+          'المصادقة خاصة بالطابعات، والتفويض خاص بالشاشات',
+          'التفويض يتم قبل كتابة اسم المستخدم دائماً'
+        ],
+        correctOption: 1,
+        explanation: 'المصادقة (Authentication) تتأكد من الهوية (مثل اسم المستخدم وكلمة المرور)، ثم يأتي التفويض (Authorization) لتحديد الصلاحيات.'
+      },
+      {
+        id: 39,
+        domain: 'أمن المعلومات والشبكات',
+        difficulty: 'سهل',
+        text: 'يوضح الشكل الجمع بين كلمة المرور، ورمز الهاتف OTP، وبصمة الإصبع لتسجيل الدخول. ماذا تُسمى هذه الآلية الأمنية؟',
+        svgKey: 'mfaDiagram',
+        visualCaption: 'عوامل التحقق المتعددة لتأمين الحسابات',
+        options: [
+          'المصادقة متعددة العوامل (MFA - Multi-Factor Authentication)',
+          'التصفح المتخفي (Incognito Mode)',
+          'البرمجيات الإعلانية (Adware)',
+          'بروتوكول نقل الملفات (FTP)'
+        ],
+        correctOption: 0,
+        explanation: 'المصادقة متعددة العوامل (MFA) تتطلب عاملين أو أكثر من فئات مختلفة (شيء تعرفه + شيء تملكه + شيء يمثلك) لتعزيز الأمان.'
+      },
+      {
+        id: 40,
+        domain: 'أمن المعلومات والشبكات',
+        difficulty: 'متوسط',
+        text: 'ما هو نوع البرمجيات الخبيثة (Malware) الذي يقوم بتشفير ملفات الضحية بالكامل ويطالب بدفع مبلغ مالي مقابل مفتاح فك التشفير؟',
+        options: [
+          'برمجيات الفدية (Ransomware)',
+          'ملفات تعريف الارتباط (Cookies)',
+          'برامج تشغيل العتاد (Drivers)',
+          'الجداول المحورية (Pivot Tables)'
+        ],
+        correctOption: 0,
+        explanation: 'برمجيات الفدية (Ransomware) تشفر بيانات النظام أو القرص وتطالب بفدية مالية لإعادة الوصول إليها.'
+      }
+    ];
+
+    /*************************************************************************
+     * 4. STATE MANAGEMENT & LOCAL STORAGE INITIALIZATION
+     *************************************************************************/
+    const STORAGE_KEY = 'comptia_itf_student_submissions_v1';
+    let submissionsList = [];
+
+    // Active Quiz Attempt State
+    let activeStudentName = '';
+    let activeStudentId = '';
+    let currentQuestionIndex = 0;
+    let userSelections = new Array(40).fill(null); // stores selected option index (0-3) or null
+    let flaggedQuestions = new Array(40).fill(false);
+    let timerInterval = null;
+    let elapsedSeconds = 0;
+    let lastSubmittedRecord = null;
+    let currentReviewFilter = 'all';
+
+    function loadSubmissionsFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            submissionsList = parsed;
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Storage read fallback:', err);
+      }
+      submissionsList = JSON.parse(JSON.stringify(INITIAL_SUBMISSIONS));
+      saveSubmissionsToStorage();
+    }
+
+    function saveSubmissionsToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(submissionsList));
+      } catch (err) {
+        console.warn('Storage write warning:', err);
+      }
+      updateDatabaseUI();
+    }
+
+    /*************************************************************************
+     * 5. SQL & GRADE HELPER FUNCTIONS (STRICT SCHEMA ADHERENCE)
+     *************************************************************************/
+    function generateSubmissionUUID() {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let suffix = '';
+      for (let i = 0; i < 4; i++) {
+        suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return `sub-${Date.now()}-${suffix}`;
+    }
+
+    function calculateArabicGrade(percentage) {
+      if (percentage >= 85) return 'ممتاز';
+      if (percentage >= 75) return 'جيد جداً';
+      if (percentage >= 60) return 'مقبول';
+      return 'يحتاج مراجعة';
+    }
+
+    function escapeSqlString(str) {
+      if (typeof str !== 'string') return '';
+      return str.replace(/'/g, "''");
+    }
+
+    function buildSingleInsertSQL(record) {
+      const answersJsonStr = JSON.stringify(record.answers);
+      return `INSERT INTO student_submissions (id, quiz_id, quiz_title, student_id, student_name, score, total_questions, percentage, grade, duration_seconds, answers, submitted_at) VALUES ('${escapeSqlString(record.id)}', '${escapeSqlString(record.quiz_id)}', '${escapeSqlString(record.quiz_title)}', '${escapeSqlString(record.student_id)}', '${escapeSqlString(record.student_name)}', ${record.score}, ${record.total_questions}, ${record.percentage}, '${escapeSqlString(record.grade)}', ${record.duration_seconds}, '${escapeSqlString(answersJsonStr)}', '${escapeSqlString(record.submitted_at)}');`;
+    }
+
+    function buildCompleteSQLScript() {
+      const schemaHeader = `-- مخطط وجدول قاعدة بيانات نتائج الكويزات
+CREATE TABLE IF NOT EXISTS student_submissions (
+  id VARCHAR(36) PRIMARY KEY NOT NULL,
+  quiz_id VARCHAR(48) NOT NULL,
+  quiz_title NVARCHAR(160) NOT NULL,
+  student_id VARCHAR(32) NOT NULL,
+  student_name NVARCHAR(120) NOT NULL,
+  score INT NOT NULL,
+  total_questions INT NOT NULL,
+  percentage INT NOT NULL CHECK (percentage BETWEEN 0 AND 100),
+  grade NVARCHAR(32) NOT NULL,
+  duration_seconds INT DEFAULT 0 NOT NULL,
+  answers JSONB NOT NULL,
+  submitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  UNIQUE (quiz_id, student_id)
+);`;
+
+      const inserts = submissionsList.map(rec => buildSingleInsertSQL(rec)).join('\n');
+      return `${schemaHeader}\n\n${inserts}`;
+    }
+
+    /*************************************************************************
+     * 6. UI NAVIGATION & TOAST NOTIFICATIONS
+     *************************************************************************/
+    function switchMainTab(tabName) {
+      const tabs = ['quiz', 'database', 'schema'];
+      tabs.forEach(t => {
+        const sec = document.getElementById(`section-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tabName) {
+          sec.classList.remove('hidden');
+          btn.className = 'px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 bg-cyan-500 text-slate-950 shadow-md';
+        } else {
+          sec.classList.add('hidden');
+          btn.className = 'px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800/60';
+        }
+      });
+      if (tabName === 'database') {
+        updateDatabaseUI();
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const colorClasses = type === 'success'
+        ? 'bg-emerald-950/95 border-emerald-500/60 text-emerald-200'
+        : type === 'warning'
+        ? 'bg-amber-950/95 border-amber-500/60 text-amber-200'
+        : 'bg-cyan-950/95 border-cyan-500/60 text-cyan-200';
+
+      const iconClass = type === 'success'
+        ? 'fa-circle-check text-emerald-400'
+        : type === 'warning'
+        ? 'fa-triangle-exclamation text-amber-400'
+        : 'fa-circle-info text-cyan-400';
+
+      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-xs sm:text-sm font-bold transition-all duration-300 ${colorClasses}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${iconClass} text-base"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function copyTextFromElement(elementId) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const text = el.innerText || el.textContent;
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast('تم نسخ الكود إلى الحافظة بنجاح!', 'success');
+      } catch (err) {
+        showToast('تعذر النسخ التلقائي، يرجى التحديد والنسخ يدوياً', 'warning');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function downloadSQLFile() {
+      const sqlContent = buildCompleteSQLScript();
+      const blob = new Blob([sqlContent], { type: 'application/sql;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `student_submissions_${Date.now()}.sql`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('تم تحميل ملف SQL بنجاح!', 'success');
+    }
+
+    /*************************************************************************
+     * 7. QUIZ ENTRY, TIMER, AND INTERACTIVE FLOW
+     *************************************************************************/
+    function checkDuplicateSubmission(quizId, studentId) {
+      return submissionsList.findIndex(
+        s => s.quiz_id === quizId && s.student_id.toLowerCase() === studentId.toLowerCase()
+      );
+    }
+
+    function handleStartQuiz(event) {
+      event.preventDefault();
+      const nameInput = document.getElementById('input-student-name').value.trim();
+      const idInput = document.getElementById('input-student-id').value.trim();
+
+      if (!nameInput || !idInput) {
+        showToast('يرجى إدخال اسم الطالب والرقم الجامعي للبدء', 'warning');
+        return;
+      }
+
+      const existingIdx = checkDuplicateSubmission(CURRENT_QUIZ_ID, idInput);
+      if (existingIdx !== -1) {
+        document.getElementById('duplicate-warning').classList.remove('hidden');
+        showToast('تنبيه: الرقم الجامعي مسجل مسبقاً لهذا الاختبار!', 'warning');
+        return;
+      }
+
+      document.getElementById('duplicate-warning').classList.add('hidden');
+      launchQuizSession(nameInput, idInput);
+    }
+
+    function forceStartWithOverwrite() {
+      const nameInput = document.getElementById('input-student-name').value.trim();
+      const idInput = document.getElementById('input-student-id').value.trim();
+      if (!nameInput || !idInput) return;
+
+      document.getElementById('duplicate-warning').classList.add('hidden');
+      launchQuizSession(nameInput, idInput);
+    }
+
+    function launchQuizSession(studentName, studentId) {
+      activeStudentName = studentName;
+      activeStudentId = studentId;
+      currentQuestionIndex = 0;
+      userSelections = new Array(40).fill(null);
+      flaggedQuestions = new Array(40).fill(false);
+      elapsedSeconds = 0;
+
+      document.getElementById('active-student-name').textContent = activeStudentName;
+      document.getElementById('active-student-id').textContent = `(${activeStudentId})`;
+
+      document.getElementById('view-start').classList.add('hidden');
+      document.getElementById('view-results').classList.add('hidden');
+      document.getElementById('view-active-quiz').classList.remove('hidden');
+
+      startQuizTimer();
+      renderQuestionNavigator();
+      renderCurrentQuestion();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function startQuizTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        elapsedSeconds++;
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function stopQuizTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function updateTimerDisplay() {
+      const mins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+      const secs = String(elapsedSeconds % 60).padStart(2, '0');
+      document.getElementById('quiz-timer-display').textContent = `${mins}:${secs}`;
+      document.getElementById('quiz-seconds-raw').textContent = elapsedSeconds;
+    }
+
+    function renderCurrentQuestion() {
+      const q = QUIZ_QUESTIONS[currentQuestionIndex];
+      document.getElementById('q-number-badge').textContent = `سؤال ${q.id} / 40`;
+      document.getElementById('q-domain-badge').textContent = q.domain;
+
+      const diffBadge = document.getElementById('q-difficulty-badge');
+      diffBadge.textContent = q.difficulty;
+      if (q.difficulty === 'سهل') {
+        diffBadge.className = 'px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 text-xs font-bold border border-emerald-500/30';
+      } else {
+        diffBadge.className = 'px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-300 text-xs font-bold border border-amber-500/30';
+      }
+
+      // Flag button state
+      const flagBtn = document.getElementById('btn-flag-question');
+      if (flaggedQuestions[currentQuestionIndex]) {
+        flagBtn.className = 'px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400 text-xs font-bold transition flex items-center gap-1.5';
+        flagBtn.innerHTML = `<i class="fa-solid fa-bookmark"></i><span>مميز للمراجعة</span>`;
+      } else {
+        flagBtn.className = 'px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700 text-xs font-semibold transition flex items-center gap-1.5';
+        flagBtn.innerHTML = `<i class="fa-regular fa-bookmark"></i><span>تمييز للمراجعة</span>`;
+      }
+
+      // Question text
+      document.getElementById('q-text').textContent = q.text;
+
+      // Visual SVG Diagram if present
+      const visualContainer = document.getElementById('q-visual-container');
+      const svgWrapper = document.getElementById('q-svg-wrapper');
+      if (q.svgKey && SVG_DIAGRAMS[q.svgKey]) {
+        visualContainer.classList.remove('hidden');
+        document.getElementById('q-visual-caption').textContent = q.visualCaption || 'رسم توضيحي تقني للسؤال';
+        svgWrapper.innerHTML = SVG_DIAGRAMS[q.svgKey];
+      } else {
+        visualContainer.classList.add('hidden');
+        svgWrapper.innerHTML = '';
+      }
+
+      // Render 4 Options
+      const optionsContainer = document.getElementById('q-options-list');
+      optionsContainer.innerHTML = '';
+      const optionLetters = ['أ', 'ب', 'ج', 'د'];
+
+      q.options.forEach((optText, idx) => {
+        const isSelected = userSelections[currentQuestionIndex] === idx;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => selectOption(idx);
+
+        btn.className = isSelected
+          ? 'option-card w-full text-right p-4 rounded-xl bg-cyan-500/15 border-2 border-cyan-400 text-white font-bold flex items-center justify-between gap-3 shadow-md shadow-cyan-500/10'
+          : 'option-card w-full text-right p-4 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-600 text-slate-200 font-medium flex items-center justify-between gap-3';
+
+        btn.innerHTML = `
+          <div class="flex items-center gap-3.5">
+            <span class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${
+              isSelected ? 'bg-cyan-400 text-slate-950' : 'bg-slate-800 text-slate-400 border border-slate-700'
+            }">${optionLetters[idx]}</span>
+            <span class="text-sm sm:text-base">${optText}</span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-[11px] font-mono-code text-slate-500">option: ${idx}</span>
+            ${
+              isSelected
+                ? '<i class="fa-solid fa-circle-check text-cyan-400 text-lg"></i>'
+                : '<i class="fa-regular fa-circle text-slate-600 text-lg"></i>'
+            }
+          </div>
+        `;
+        optionsContainer.appendChild(btn);
+      });
+
+      // Prev / Next buttons state
+      document.getElementById('btn-prev-q').disabled = currentQuestionIndex === 0;
+      const nextBtn = document.getElementById('btn-next-q');
+      if (currentQuestionIndex === QUIZ_QUESTIONS.length - 1) {
+        nextBtn.innerHTML = `<span>مراجعة وإنهاء الاختبار</span><i class="fa-solid fa-check-double"></i>`;
+        nextBtn.onclick = () => openSubmitConfirmation();
+      } else {
+        nextBtn.innerHTML = `<span>السؤال التالي</span><i class="fa-solid fa-arrow-left"></i>`;
+        nextBtn.onclick = () => navigateQuestion(1);
+      }
+
+      updateProgressCounters();
+    }
+
+    function selectOption(optionIndex) {
+      userSelections[currentQuestionIndex] = optionIndex;
+      renderCurrentQuestion();
+      renderQuestionNavigator();
+    }
+
+    function navigateQuestion(delta) {
+      const nextIdx = currentQuestionIndex + delta;
+      if (nextIdx >= 0 && nextIdx < QUIZ_QUESTIONS.length) {
+        currentQuestionIndex = nextIdx;
+        renderCurrentQuestion();
+        renderQuestionNavigator();
+      }
+    }
+
+    function jumpToQuestion(index) {
+      currentQuestionIndex = index;
+      renderCurrentQuestion();
+      renderQuestionNavigator();
+    }
+
+    function toggleFlagQuestion() {
+      flaggedQuestions[currentQuestionIndex] = !flaggedQuestions[currentQuestionIndex];
+      renderCurrentQuestion();
+      renderQuestionNavigator();
+    }
+
+    function jumpToFirstUnanswered() {
+      const idx = userSelections.findIndex(val => val === null);
+      if (idx !== -1) {
+        jumpToQuestion(idx);
+        showToast(`تم الانتقال إلى السؤال رقم ${idx + 1}`, 'info');
+      } else {
+        showToast('رائع! لقد أجبت على جميع الـ 40 سؤالاً', 'success');
+      }
+    }
+
+    function updateProgressCounters() {
+      const answeredCount = userSelections.filter(v => v !== null).length;
+      const pct = Math.round((answeredCount / 40) * 100);
+      document.getElementById('answered-counter').textContent = `${answeredCount} / 40`;
+      document.getElementById('navigator-progress-pct').textContent = `${pct}%`;
+    }
+
+    function renderQuestionNavigator() {
+      const grid = document.getElementById('question-grid-nav');
+      grid.innerHTML = '';
+
+      QUIZ_QUESTIONS.forEach((q, idx) => {
+        const isCurrent = idx === currentQuestionIndex;
+        const isAnswered = userSelections[idx] !== null;
+        const isFlagged = flaggedQuestions[idx];
+        const hasImage = Boolean(q.svgKey);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => jumpToQuestion(idx);
+
+        let styleClasses = 'bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500';
+        if (isCurrent) {
+          styleClasses = 'bg-cyan-500 border-cyan-300 text-slate-950 font-extrabold ring-2 ring-cyan-400/40';
+        } else if (isFlagged) {
+          styleClasses = 'bg-amber-500/25 border-amber-400 text-amber-200 font-bold';
+        } else if (isAnswered) {
+          styleClasses = 'bg-emerald-500/20 border-emerald-500/70 text-emerald-300 font-bold';
+        }
+
+        btn.className = `relative h-10 rounded-lg border text-xs font-mono-code transition flex items-center justify-center ${styleClasses}`;
+        btn.innerHTML = `
+          <span>${q.id}</span>
+          ${hasImage ? `<i class="fa-solid fa-image text-[8px] absolute top-1 left-1 ${isCurrent ? 'text-slate-900' : 'text-cyan-400'}"></i>` : ''}
+        `;
+        grid.appendChild(btn);
+      });
+    }
+
+    /*************************************************************************
+     * 8. QUIZ SUBMISSION & SQL / JSONB RECORD GENERATION
+     *************************************************************************/
+    function openSubmitConfirmation() {
+      const answeredCount = userSelections.filter(v => v !== null).length;
+      const unansweredCount = 40 - answeredCount;
+
+      document.getElementById('modal-submit-summary').textContent =
+        `لقد قمت بالإجابة على (${answeredCount}) من أصل (40) سؤالاً في زمن قدره (${elapsedSeconds}) ثانية. عند التأكيد سيتم تصحيح الاختبار وتوليد سجل قاعدة البيانات وأمر SQL INSERT الموافق للجدول.`;
+
+      const alertBox = document.getElementById('modal-unanswered-alert');
+      if (unansweredCount > 0) {
+        alertBox.classList.remove('hidden');
+        alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation ml-1"></i> تنبيه: يوجد لديك <strong>${unansweredCount}</strong> سؤال لم تتم الإجابة عليه (سيتم احتسابها كإجابات خاطئة إذا قمت بالتسليم الآن).`;
+      } else {
+        alertBox.classList.add('hidden');
+      }
+
+      document.getElementById('modal-submit-confirm').classList.remove('hidden');
+    }
+
+    function closeSubmitConfirmation() {
+      document.getElementById('modal-submit-confirm').classList.add('hidden');
+    }
+
+    function finalizeQuizSubmission() {
+      closeSubmitConfirmation();
+      stopQuizTimer();
+
+      let score = 0;
+      const answersArray = QUIZ_QUESTIONS.map((q, idx) => {
+        const selected = userSelections[idx] !== null ? userSelections[idx] : -1;
+        const isCorrect = selected === q.correctOption;
+        if (isCorrect) score++;
+        return {
+          questionId: q.id,
+          selectedOption: selected,
+          correctOption: q.correctOption,
+          isCorrect: isCorrect
+        };
+      });
+
+      const totalQuestions = 40;
+      const percentage = Math.round((score / totalQuestions) * 100);
+      const grade = calculateArabicGrade(percentage);
+      const submissionRecord = {
+        id: generateSubmissionUUID(),
+        quiz_id: CURRENT_QUIZ_ID,
+        quiz_title: CURRENT_QUIZ_TITLE,
+        student_id: activeStudentId,
+        student_name: activeStudentName,
+        score: score,
+        total_questions: totalQuestions,
+        percentage: percentage,
+        grade: grade,
+        duration_seconds: elapsedSeconds,
+        answers: answersArray,
+        submitted_at: new Date().toISOString()
+      };
+
+      // Enforce UNIQUE (quiz_id, student_id): replace if exists, otherwise push
+      const dupIndex = checkDuplicateSubmission(submissionRecord.quiz_id, submissionRecord.student_id);
+      if (dupIndex !== -1) {
+        submissionsList[dupIndex] = submissionRecord;
+      } else {
+        submissionsList.push(submissionRecord);
+      }
+
+      lastSubmittedRecord = submissionRecord;
+      saveSubmissionsToStorage();
+      renderResultsScreen(submissionRecord);
+      showToast('تم اعتماد النتيجة وتوليد سجل SQL بنجاح!', 'success');
+    }
+
+    function quickDemoSimulation() {
+      const nameInput = document.getElementById('input-student-name').value.trim() || 'خالد عبد الرحمن المنصور';
+      const idInput = document.getElementById('input-student-id').value.trim() || `STU-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      activeStudentName = nameInput;
+      activeStudentId = idInput;
+      elapsedSeconds = Math.floor(420 + Math.random() * 380); // ~7-13 mins realistic duration
+
+      // Generate ~82%-90% correct answers for demo
+      userSelections = QUIZ_QUESTIONS.map((q, idx) => {
+        if (idx % 7 === 0) {
+          return (q.correctOption + 1) % 4; // occasional mistake
+        }
+        return q.correctOption;
+      });
+
+      finalizeQuizSubmission();
+      document.getElementById('view-start').classList.add('hidden');
+    }
+
+    function renderResultsScreen(record) {
+      document.getElementById('view-active-quiz').classList.add('hidden');
+      document.getElementById('view-results').classList.remove('hidden');
+
+      document.getElementById('res-submission-meta').textContent =
+        `id: ${record.id} | quiz_id: ${record.quiz_id}`;
+      document.getElementById('res-student-name').textContent = record.student_name;
+      document.getElementById('res-student-id').textContent = `student_id: ${record.student_id}`;
+      document.getElementById('res-score').textContent = `${record.score} / ${record.total_questions}`;
+      document.getElementById('res-percentage').textContent = `${record.percentage}%`;
+
+      const gradeEl = document.getElementById('res-grade');
+      gradeEl.textContent = record.grade;
+      if (record.grade === 'ممتاز') gradeEl.className = 'text-lg font-extrabold mt-1 block text-emerald-400';
+      else if (record.grade === 'جيد جداً') gradeEl.className = 'text-lg font-extrabold mt-1 block text-cyan-400';
+      else if (record.grade === 'مقبول') gradeEl.className = 'text-lg font-extrabold mt-1 block text-amber-400';
+      else gradeEl.className = 'text-lg font-extrabold mt-1 block text-rose-400';
+
+      document.getElementById('res-duration').textContent = `${record.duration_seconds}s`;
+      document.getElementById('res-timestamp').textContent = record.submitted_at;
+
+      document.getElementById('res-single-sql-code').textContent = buildSingleInsertSQL(record);
+
+      filterReview('all');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function filterReview(mode) {
+      currentReviewFilter = mode;
+      const modes = ['all', 'correct', 'wrong'];
+      modes.forEach(m => {
+        const btn = document.getElementById(`rev-filter-${m}`);
+        if (m === mode) {
+          btn.className = 'px-3 py-1.5 rounded-lg bg-cyan-500 text-slate-950 text-xs font-extrabold';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-bold';
+        }
+      });
+
+      const container = document.getElementById('review-questions-container');
+      container.innerHTML = '';
+
+      if (!lastSubmittedRecord) return;
+
+      QUIZ_QUESTIONS.forEach((q, idx) => {
+        const ansObj = lastSubmittedRecord.answers[idx];
+        if (mode === 'correct' && !ansObj.isCorrect) return;
+        if (mode === 'wrong' && ansObj.isCorrect) return;
+
+        const studentOptText = ansObj.selectedOption >= 0 ? q.options[ansObj.selectedOption] : 'لم تتم الإجابة (-1)';
+        const correctOptText = q.options[q.correctOption];
+
+        const card = document.createElement('div');
+        card.className = `p-4 sm:p-5 rounded-xl border ${
+          ansObj.isCorrect
+            ? 'bg-emerald-950/20 border-emerald-500/30'
+            : 'bg-rose-950/20 border-rose-500/30'
+        } space-y-3`;
+
+        card.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-md font-mono-code text-xs font-bold ${
+                ansObj.isCorrect ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'
+              }">سؤال #${q.id}</span>
+              <span class="text-xs text-slate-400">${q.domain}</span>
+            </div>
+            <span class="text-xs font-mono-code ${ansObj.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
+              ${ansObj.isCorrect ? '✓ isCorrect: true' : '✕ isCorrect: false'}
+            </span>
+          </div>
+
+          <p class="text-sm sm:text-base font-bold text-white">${q.text}</p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm pt-1">
+            <div class="p-3 rounded-lg bg-slate-900/90 border ${
+              ansObj.isCorrect ? 'border-emerald-500/40 text-emerald-300' : 'border-rose-500/40 text-rose-300'
+            }">
+              <span class="block text-[11px] text-slate-400 mb-1">إجابة الطالب (selectedOption: ${ansObj.selectedOption}):</span>
+              <strong>${studentOptText}</strong>
+            </div>
+
+            <div class="p-3 rounded-lg bg-slate-900/90 border border-emerald-500/40 text-emerald-300">
+              <span class="block text-[11px] text-slate-400 mb-1">الإجابة الصحيحة (correctOption: ${ansObj.correctOption}):</span>
+              <strong>${correctOptText}</strong>
+            </div>
+          </div>
+
+          <div class="text-xs text-cyan-200/90 bg-slate-900/70 p-3 rounded-lg border border-slate-800">
+            <i class="fa-solid fa-lightbulb text-amber-400 ml-1"></i>
+            <strong>التوضيح العلمي:</strong> ${q.explanation}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function resetToStartScreen() {
+      stopQuizTimer();
+      document.getElementById('input-student-name').value = '';
+      document.getElementById('input-student-id').value = '';
+      document.getElementById('duplicate-warning').classList.add('hidden');
+
+      document.getElementById('view-active-quiz').classList.add('hidden');
+      document.getElementById('view-results').classList.add('hidden');
+      document.getElementById('view-start').classList.remove('hidden');
+    }
+
+    /*************************************************************************
+     * 9. DATABASE TABLE & JSONB MODAL RENDERER
+     *************************************************************************/
+    function updateDatabaseUI() {
+      document.getElementById('db-count-badge').textContent = submissionsList.length;
+      document.getElementById('table-rows-count').textContent = submissionsList.length;
+      document.getElementById('full-sql-script-box').textContent = buildCompleteSQLScript();
+
+      const tbody = document.getElementById('submissions-tbody');
+      tbody.innerHTML = '';
+
+      submissionsList.forEach((rec, index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-900/80 transition';
+
+        let gradeBadgeColor = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+        if (rec.grade === 'ممتاز') gradeBadgeColor = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+        else if (rec.grade === 'جيد جداً') gradeBadgeColor = 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30';
+        else if (rec.grade === 'مقبول') gradeBadgeColor = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+
+        tr.innerHTML = `
+          <td class="py-3 px-3 font-mono-code text-cyan-400 whitespace-nowrap" dir="ltr">${rec.id}</td>
+          <td class="py-3 px-3 font-mono-code text-slate-300 whitespace-nowrap" dir="ltr">${rec.quiz_id}</td>
+          <td class="py-3 px-3 text-white font-semibold min-w-[180px]">${rec.quiz_title}</td>
+          <td class="py-3 px-3 font-mono-code text-amber-300 whitespace-nowrap" dir="ltr">${rec.student_id}</td>
+          <td class="py-3 px-3 text-white whitespace-nowrap">${rec.student_name}</td>
+          <td class="py-3 px-3 font-mono-code text-emerald-400 font-bold">${rec.score}</td>
+          <td class="py-3 px-3 font-mono-code text-slate-300">${rec.total_questions}</td>
+          <td class="py-3 px-3 font-mono-code text-cyan-300 font-bold">${rec.percentage}%</td>
+          <td class="py-3 px-3 whitespace-nowrap">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${gradeBadgeColor}">${rec.grade}</span>
+          </td>
+          <td class="py-3 px-3 font-mono-code text-slate-300">${rec.duration_seconds}s</td>
+          <td class="py-3 px-3 whitespace-nowrap">
+            <button
+              onclick="openJsonInspector(${index})"
+              class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-mono-code text-xs transition"
+            >
+              JSONB [${rec.answers.length}]
+            </button>
+          </td>
+          <td class="py-3 px-3 font-mono-code text-xs text-slate-400 whitespace-nowrap" dir="ltr">${rec.submitted_at}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openJsonInspector(recordIndex) {
+      const rec = submissionsList[recordIndex];
+      if (!rec) return;
+      document.getElementById('json-modal-subtitle').textContent =
+        `id: ${rec.id} | student_id: ${rec.student_id} (${rec.answers.length} items)`;
+      document.getElementById('json-modal-content').textContent = JSON.stringify(rec.answers, null, 2);
+      document.getElementById('modal-json-inspector').classList.remove('hidden');
+    }
+
+    function closeJsonInspector() {
+      document.getElementById('modal-json-inspector').classList.add('hidden');
+    }
+
+    // Initialize Application on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSubmissionsFromStorage();
+      updateDatabaseUI();
+    });
+  </script>
+</body>
+</html>
