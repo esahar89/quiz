@@ -9,6 +9,10 @@ import {
   svgIllustrations
 } from './src/data/questions.ts';
 import { buildComptiaQuiz, THIRD_QUIZ_ID } from './src/data/comptiaQuiz.ts';
+import {
+  buildComptiaTechPlusQuiz,
+  FOURTH_QUIZ_ID
+} from './src/data/comptiaTechPlusQuiz.ts';
 import { generateContextualQuestionSvg } from './src/utils/contextualSvg.ts';
 import type {
   QuizDefinition,
@@ -34,7 +38,11 @@ function sanitizeQuizIfPolluted(quiz: QuizDefinition): {
   quiz: QuizDefinition;
   modified: boolean;
 } {
-  if (quiz.id === DEFAULT_QUIZ_ID || quiz.id === THIRD_QUIZ_ID) {
+  if (
+    quiz.id === DEFAULT_QUIZ_ID ||
+    quiz.id === THIRD_QUIZ_ID ||
+    quiz.id === FOURTH_QUIZ_ID
+  ) {
     return { quiz, modified: false };
   }
 
@@ -288,14 +296,15 @@ function ensureDatabase(): DatabaseStore {
   }
   const defaultQuiz = buildDefaultQuiz();
   const networkingQuiz = buildNetworkingQuiz();
-  const comptiaQuiz = buildComptiaQuiz(true);
+  const comptiaQuiz = buildComptiaQuiz(false);
+  const techPlusQuiz = buildComptiaTechPlusQuiz(true);
 
   if (!fs.existsSync(DB_FILE)) {
     const initialStore: DatabaseStore = {
-      version: 2,
+      version: 4,
       lastUpdated: new Date().toISOString(),
-      activeQuizId: comptiaQuiz.id,
-      quizzes: [defaultQuiz, networkingQuiz, comptiaQuiz],
+      activeQuizId: techPlusQuiz.id,
+      quizzes: [defaultQuiz, networkingQuiz, comptiaQuiz, techPlusQuiz],
       submissions: buildSeedSubmissions(defaultQuiz)
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(initialStore, null, 2), 'utf-8');
@@ -308,11 +317,11 @@ function ensureDatabase(): DatabaseStore {
 
     let quizzes = Array.isArray(parsed.quizzes) && parsed.quizzes.length > 0
       ? parsed.quizzes
-      : [defaultQuiz, networkingQuiz, comptiaQuiz];
+      : [defaultQuiz, networkingQuiz, comptiaQuiz, techPlusQuiz];
 
     let anyModified = false;
 
-    // Ensure Quiz 1 (BIOS - 14Q), Quiz 2 (Networking - 30Q), and Quiz 3 (CompTIA ITF+ - 40Q) are always present
+    // Ensure all 4 built-in quizzes are always present
     if (!quizzes.some((q) => q.id === defaultQuiz.id)) {
       quizzes.unshift(defaultQuiz);
       anyModified = true;
@@ -331,15 +340,22 @@ function ensureDatabase(): DatabaseStore {
       quizzes.push(comptiaQuiz);
       anyModified = true;
     }
+    const hasTechPlusQuiz = quizzes.some(
+      (q) => q.id === techPlusQuiz.id || q.questions.length === 70
+    );
+    if (!hasTechPlusQuiz) {
+      quizzes.push(techPlusQuiz);
+      anyModified = true;
+    }
 
     let activeQuizId =
       parsed.activeQuizId ||
       quizzes.find((q) => q.isActive)?.id ||
-      comptiaQuiz.id;
+      techPlusQuiz.id;
 
-    // When Quiz 3 (CompTIA ITF+ 40Q) is newly added to an existing DB, activate it immediately
-    if (!hasComptiaQuiz) {
-      activeQuizId = comptiaQuiz.id;
+    // When Quiz 4 (CompTIA Tech+ 70Q) is newly added to an existing DB, activate it immediately
+    if (!hasTechPlusQuiz) {
+      activeQuizId = techPlusQuiz.id;
       anyModified = true;
     }
 
@@ -369,7 +385,7 @@ function ensureDatabase(): DatabaseStore {
     });
 
     const store: DatabaseStore = {
-      version: 2,
+      version: 4,
       lastUpdated: parsed.lastUpdated || new Date().toISOString(),
       activeQuizId,
       quizzes,
@@ -383,10 +399,10 @@ function ensureDatabase(): DatabaseStore {
     return store;
   } catch {
     const fallbackStore: DatabaseStore = {
-      version: 2,
+      version: 4,
       lastUpdated: new Date().toISOString(),
-      activeQuizId: comptiaQuiz.id,
-      quizzes: [defaultQuiz, networkingQuiz, comptiaQuiz],
+      activeQuizId: techPlusQuiz.id,
+      quizzes: [defaultQuiz, networkingQuiz, comptiaQuiz, techPlusQuiz],
       submissions: []
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(fallbackStore, null, 2), 'utf-8');

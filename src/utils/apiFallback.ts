@@ -1,5 +1,6 @@
 import { QUIZ_QUESTIONS, RAW_NETWORKING_QUESTIONS, evaluateGrade } from '../data/questions';
 import { buildComptiaQuiz, THIRD_QUIZ_ID } from '../data/comptiaQuiz';
+import { buildComptiaTechPlusQuiz, FOURTH_QUIZ_ID } from '../data/comptiaTechPlusQuiz';
 import { generateContextualQuestionSvg } from './contextualSvg';
 import {
   saveSubmissionToCloud,
@@ -20,8 +21,8 @@ import type {
   DatabaseColumnSchema
 } from '../types/quiz';
 
-const STORAGE_KEY = 'sahar_quiz_platform_db_v3';
-const LEGACY_KEYS = ['sahar_quiz_platform_db_v2', 'sahar_quiz_platform_db_v1'];
+const STORAGE_KEY = 'sahar_quiz_platform_db_v4';
+const LEGACY_KEYS = ['sahar_quiz_platform_db_v3', 'sahar_quiz_platform_db_v2', 'sahar_quiz_platform_db_v1'];
 
 interface LocalDatabaseStore {
   version: number;
@@ -137,7 +138,8 @@ function buildInitialQuizzes(): QuizDefinition[] {
       isActive: false,
       questions: networkingQuestions
     },
-    buildComptiaQuiz(true)
+    buildComptiaQuiz(false),
+    buildComptiaTechPlusQuiz(true)
   ];
 }
 
@@ -191,9 +193,9 @@ function getLocalStore(): LocalDatabaseStore {
   }
 
   const fallbackStore: LocalDatabaseStore = {
-    version: 3,
+    version: 4,
     lastUpdated: new Date().toISOString(),
-    activeQuizId: THIRD_QUIZ_ID,
+    activeQuizId: FOURTH_QUIZ_ID,
     quizzes: initialQuizzes,
     submissions: legacySubmissions
   };
