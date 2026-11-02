@@ -419,11 +419,18 @@ async function startServer() {
   // Support large payloads for uploading 20+ quizzes with inline SVGs
   app.use(express.json({ limit: '50mb' }));
 
-  // Prevent browser caching on API routes so active quiz switches take effect immediately
-  app.use('/api', (_req, res, next) => {
+  // Enable CORS & prevent browser caching on API routes so Vercel / external frontends can sync directly
+  app.use('/api', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
     next();
   });
 

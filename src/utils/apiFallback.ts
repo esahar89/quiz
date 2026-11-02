@@ -1,6 +1,15 @@
 import { QUIZ_QUESTIONS, RAW_NETWORKING_QUESTIONS, evaluateGrade } from '../data/questions';
 import { buildComptiaQuiz, THIRD_QUIZ_ID } from '../data/comptiaQuiz';
 import { generateContextualQuestionSvg } from './contextualSvg';
+import {
+  saveSubmissionToCloud,
+  fetchAllCloudSubmissions,
+  deleteSubmissionFromCloud,
+  saveActiveQuizIdToCloud,
+  fetchActiveQuizIdFromCloud,
+  saveCustomQuizToCloud,
+  fetchCloudQuizzes
+} from '../firebase';
 import type {
   QuizDefinition,
   QuizQuestion,
@@ -12,6 +21,7 @@ import type {
 } from '../types/quiz';
 
 const STORAGE_KEY = 'sahar_quiz_platform_db_v3';
+const LEGACY_KEYS = ['sahar_quiz_platform_db_v2', 'sahar_quiz_platform_db_v1'];
 
 interface LocalDatabaseStore {
   version: number;
@@ -132,19 +142,46 @@ function buildInitialQuizzes(): QuizDefinition[] {
 }
 
 function getLocalStore(): LocalDatabaseStore {
+  const initialQuizzes = buildInitialQuizzes();
+  let legacySubmissions: StudentSubmission[] = [];
+
+  for (const key of LEGACY_KEYS) {
+    try {
+      const legacyRaw = localStorage.getItem(key);
+      if (legacyRaw) {
+        const legacyParsed = JSON.parse(legacyRaw) as Partial<LocalDatabaseStore>;
+        if (Array.isArray(legacyParsed.submissions)) {
+          legacySubmissions.push(...legacyParsed.submissions);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as LocalDatabaseStore;
       if (Array.isArray(parsed.quizzes) && parsed.quizzes.length > 0) {
-        if (!parsed.quizzes.some((q) => q.id === THIRD_QUIZ_ID)) {
-          parsed.quizzes.push(buildComptiaQuiz(true));
-          parsed.activeQuizId = THIRD_QUIZ_ID;
-          parsed.quizzes = parsed.quizzes.map((q) => ({
-            ...q,
-            isActive: q.id === THIRD_QUIZ_ID
-          }));
-          saveLocalStore(parsed);
+        for (const builtIn of initialQuizzes) {
+          if (!parsed.quizzes.some((q) => q.id === builtIn.id)) {
+            parsed.quizzes.push(builtIn);
+          }
+        }
+        if (legacySubmissions.length > 0) {
+          const existingKeys = new Set(
+            (parsed.submissions || []).map(
+              (s) => `${s.quizId}_${s.studentId.toLowerCase()}`
+            )
+          );
+          for (const sub of legacySubmissions) {
+            const k = `${sub.quizId}_${sub.studentId.toLowerCase()}`;
+            if (!existingKeys.has(k)) {
+              parsed.submissions.push(sub);
+              existingKeys.add(k);
+            }
+          }
         }
         return parsed;
       }
@@ -153,13 +190,12 @@ function getLocalStore(): LocalDatabaseStore {
     // ignore
   }
 
-  const initialQuizzes = buildInitialQuizzes();
   const fallbackStore: LocalDatabaseStore = {
     version: 3,
     lastUpdated: new Date().toISOString(),
     activeQuizId: THIRD_QUIZ_ID,
     quizzes: initialQuizzes,
-    submissions: []
+    submissions: legacySubmissions
   };
 
   saveLocalStore(fallbackStore);
@@ -179,7 +215,7 @@ function getActiveQuiz(db: LocalDatabaseStore): QuizDefinition {
   return (
     db.quizzes.find((q) => q.id === db.activeQuizId) ||
     db.quizzes.find((q) => q.isActive) ||
-    db.quizzes[0]
+    db.quizzes[db.quizzes.length - 1]
   );
 }
 
@@ -197,13 +233,187 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
-function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
+function mergeQuizzesLists(
+  baseQuizzes: QuizDefinition[],
+  extraQuizzes: QuizDefinition[],
+  activeQuizId: string
+): QuizDefinition[] {
+  const map = new Map<string, QuizDefinition>();
+  for (const q of baseQuizzes) {
+    map.set(q.id, q);
+  }
+  for (const q of extraQuizzes) {
+    if (!map.has(q.id)) {
+      map.set(q.id, q);
+    }
+  }
+  return Array.from(map.values()).map((q) => ({
+    ...q,
+    isActive: q.id === activeQuizId
+  }));
+}
+
+function mergeSubmissionsLists(
+  primary: StudentSubmission[],
+  secondary: StudentSubmission[]
+): StudentSubmission[] {
+  const map = new Map<string, StudentSubmission>();
+  for (const s of [...primary, ...secondary]) {
+    if (!s || !s.studentId) continue;
+    const key = `${s.quizId}_${s.studentId.toLowerCase()}`;
+    if (!map.has(key)) {
+      map.set(key, s);
+    }
+  }
+  return Array.from(map.values()).sort(
+    (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+  );
+}
+
+function computeDashboardPayload(
+  quizzes: QuizDefinition[],
+  activeQuizId: string,
+  requestedQuizId: string,
+  allSubmissions: StudentSubmission[]
+): DashboardPayload {
+  const viewAllQuizzes = requestedQuizId === 'all';
+  const selectedQuiz =
+    quizzes.find((q) => q.id === requestedQuizId) ||
+    quizzes.find((q) => q.id === activeQuizId) ||
+    quizzes[quizzes.length - 1];
+
+  const quizSubmissions = (
+    viewAllQuizzes
+      ? allSubmissions
+      : allSubmissions.filter(
+          (s) =>
+            s.quizId === selectedQuiz.id ||
+            s.totalQuestions === selectedQuiz.questions.length
+        )
+  ).sort(
+    (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+  );
+
+  const totalStudents = quizSubmissions.length;
+  const maxPossibleScore = selectedQuiz.questions.length;
+  const averageScore =
+    totalStudents > 0
+      ? Number(
+          (quizSubmissions.reduce((sum, s) => sum + s.score, 0) / totalStudents).toFixed(1)
+        )
+      : 0;
+  const averagePercentage =
+    totalStudents > 0
+      ? Math.round(
+          quizSubmissions.reduce((sum, s) => sum + s.percentage, 0) / totalStudents
+        )
+      : 0;
+  const passedCount = quizSubmissions.filter((s) => s.percentage >= 50).length;
+  const passRate = totalStudents > 0 ? Math.round((passedCount / totalStudents) * 100) : 0;
+  const highestScore =
+    totalStudents > 0 ? Math.max(...quizSubmissions.map((s) => s.score)) : 0;
+  const lowestScore =
+    totalStudents > 0 ? Math.min(...quizSubmissions.map((s) => s.score)) : 0;
+  const averageDurationSeconds =
+    totalStudents > 0
+      ? Math.round(
+          quizSubmissions.reduce((sum, s) => sum + s.durationSeconds, 0) / totalStudents
+        )
+      : 0;
+
+  const strictSelectedSubmissions = allSubmissions.filter(
+    (s) =>
+      s.quizId === selectedQuiz.id ||
+      s.totalQuestions === selectedQuiz.questions.length
+  );
+
+  const questionAnalytics: QuestionAnalyticsItem[] = selectedQuiz.questions.map((q) => {
+    const optionCounts: [number, number, number, number] = [0, 0, 0, 0];
+    let correctCount = 0;
+    strictSelectedSubmissions.forEach((sub) => {
+      const ans = sub.answers.find((a) => a.questionId === q.id);
+      if (ans && ans.selectedOption >= 0 && ans.selectedOption <= 3) {
+        optionCounts[ans.selectedOption]++;
+        if (ans.isCorrect) correctCount++;
+      }
+    });
+    const attemptsCount = strictSelectedSubmissions.length;
+    const correctRate =
+      attemptsCount > 0 ? Math.round((correctCount / attemptsCount) * 100) : 0;
+    return {
+      questionId: q.id,
+      questionText: q.question,
+      correctOptionIndex: q.correct,
+      totalAttempts: attemptsCount,
+      correctCount,
+      correctRate,
+      optionCounts
+    };
+  });
+
+  return {
+    quizzes,
+    activeQuizId,
+    selectedQuizId: viewAllQuizzes ? 'all' : selectedQuiz.id,
+    submissions: quizSubmissions,
+    stats: {
+      totalStudents,
+      averageScore,
+      maxPossibleScore,
+      averagePercentage,
+      passRate,
+      highestScore,
+      lowestScore,
+      averageDurationSeconds
+    },
+    questionAnalytics,
+    dbMetadata: {
+      engine: 'Firebase Firestore Cloud DB + Server Sync (Multi-Origin)',
+      tableName: 'student_submissions & quizzes',
+      storageFile: 'cloud.firestore/student_submissions',
+      fileSizeBytes: JSON.stringify(allSubmissions).length,
+      totalRecords: allSubmissions.length,
+      totalQuizzes: quizzes.length,
+      lastUpdated: new Date().toISOString(),
+      columns: DB_COLUMNS_SCHEMA
+    }
+  };
+}
+
+async function syncLocalSubmissionsToCloud(): Promise<void> {
+  const localDb = getLocalStore();
+  if (localDb.submissions.length > 0) {
+    await Promise.allSettled(
+      localDb.submissions.map((sub) => saveSubmissionToCloud(sub))
+    );
+  }
+}
+
+// Automatically sync any local browser submissions to Firestore on boot
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    syncLocalSubmissionsToCloud();
+  }, 800);
+}
+
+async function handleCloudFirstRequest(urlStr: string, init?: RequestInit): Promise<Response> {
   const url = new URL(urlStr, window.location.origin);
   const pathname = url.pathname;
   const method = (init?.method || 'GET').toUpperCase();
   const body = init?.body ? JSON.parse(String(init.body)) : {};
 
   const db = getLocalStore();
+
+  // Sync quizzes and activeQuizId from Firebase Cloud
+  const [cloudActiveQuizId, cloudQuizzes] = await Promise.all([
+    fetchActiveQuizIdFromCloud(),
+    fetchCloudQuizzes()
+  ]);
+
+  if (cloudActiveQuizId) {
+    db.activeQuizId = cloudActiveQuizId;
+  }
+  db.quizzes = mergeQuizzesLists(db.quizzes, cloudQuizzes, db.activeQuizId);
 
   // POST /api/auth/admin
   if (pathname === '/api/auth/admin' && method === 'POST') {
@@ -217,6 +427,7 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
 
   // GET /api/quizzes/active
   if (pathname === '/api/quizzes/active' && method === 'GET') {
+    saveLocalStore(db);
     return jsonResponse({ quiz: getActiveQuiz(db) });
   }
 
@@ -228,7 +439,10 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
       return jsonResponse({ error: 'يرجى إدخال رقم طالب صحيح.' }, 400);
     }
     const activeQuiz = getActiveQuiz(db);
-    const existing = db.submissions.find(
+    const cloudSubs = await fetchAllCloudSubmissions();
+    const allSubs = mergeSubmissionsLists(cloudSubs, db.submissions);
+
+    const existing = allSubs.find(
       (s) =>
         s.quizId === activeQuiz.id && s.studentId.toLowerCase() === studentId.toLowerCase()
     );
@@ -273,11 +487,15 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
         getActiveQuiz(db);
     }
 
-    const existing = db.submissions.find(
+    const cloudSubs = await fetchAllCloudSubmissions();
+    const allSubs = mergeSubmissionsLists(cloudSubs, db.submissions);
+
+    const existing = allSubs.find(
       (s) =>
         s.quizId === targetQuiz.id && s.studentId.toLowerCase() === studentId.toLowerCase()
     );
     if (existing) {
+      await saveSubmissionToCloud(existing);
       return jsonResponse({ alreadySubmitted: true, submission: existing, quiz: targetQuiz });
     }
 
@@ -313,6 +531,10 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
 
     db.submissions.unshift(newSubmission);
     saveLocalStore(db);
+
+    // Save immediately to Firebase Firestore so Teacher Dashboard sees it from Vercel or anywhere
+    await saveSubmissionToCloud(newSubmission);
+
     return jsonResponse(
       { alreadySubmitted: false, submission: newSubmission, quiz: targetQuiz },
       201
@@ -358,12 +580,14 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
 
       db.quizzes.push(newQuiz);
       createdQuizzes.push(newQuiz);
+      await saveCustomQuizToCloud(newQuiz);
     }
 
     if (activateImmediately && createdQuizzes.length > 0) {
       const lastAdded = createdQuizzes[createdQuizzes.length - 1];
       db.activeQuizId = lastAdded.id;
       db.quizzes = db.quizzes.map((q) => ({ ...q, isActive: q.id === lastAdded.id }));
+      await saveActiveQuizIdToCloud(db.activeQuizId);
     }
 
     saveLocalStore(db);
@@ -382,6 +606,7 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
     db.activeQuizId = targetQuiz.id;
     db.quizzes = db.quizzes.map((q) => ({ ...q, isActive: q.id === targetQuiz.id }));
     saveLocalStore(db);
+    await saveActiveQuizIdToCloud(db.activeQuizId);
     return jsonResponse({
       success: true,
       activeQuizId: db.activeQuizId,
@@ -398,6 +623,10 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
     db.quizzes = db.quizzes.map((q) =>
       q.id === targetQuizId ? { ...q, title: newTitle } : q
     );
+    const updatedQuiz = db.quizzes.find((q) => q.id === targetQuizId);
+    if (updatedQuiz) {
+      await saveCustomQuizToCloud(updatedQuiz);
+    }
     saveLocalStore(db);
     return jsonResponse({ success: true, quizzes: db.quizzes });
   }
@@ -412,6 +641,7 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
     db.submissions = db.submissions.filter((s) => s.quizId !== targetQuizId);
     if (db.activeQuizId === targetQuizId) {
       db.activeQuizId = db.quizzes[0].id;
+      await saveActiveQuizIdToCloud(db.activeQuizId);
     }
     db.quizzes = db.quizzes.map((q) => ({ ...q, isActive: q.id === db.activeQuizId }));
     saveLocalStore(db);
@@ -426,6 +656,9 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
   const subDeleteMatch = pathname.match(/^\/api\/submissions\/([^/]+)$/);
   if (subDeleteMatch && method === 'DELETE') {
     const targetId = decodeURIComponent(subDeleteMatch[1]);
+    const cloudSubs = await fetchAllCloudSubmissions();
+    const allSubs = mergeSubmissionsLists(cloudSubs, db.submissions);
+    await deleteSubmissionFromCloud(targetId, allSubs);
     db.submissions = db.submissions.filter(
       (s) => s.id !== targetId && s.studentId.toLowerCase() !== targetId.toLowerCase()
     );
@@ -436,121 +669,143 @@ function handleLocalApiRequest(urlStr: string, init?: RequestInit): Response {
   // GET /api/dashboard
   if (pathname === '/api/dashboard' && method === 'GET') {
     const requestedQuizId = url.searchParams.get('quizId') || '';
-    const viewAllQuizzes = requestedQuizId === 'all';
-    const selectedQuiz =
-      db.quizzes.find((q) => q.id === requestedQuizId) || getActiveQuiz(db);
-    const quizSubmissions = viewAllQuizzes
-      ? db.submissions
-      : db.submissions.filter(
-          (s) =>
-            s.quizId === selectedQuiz.id ||
-            (s.totalQuestions === selectedQuiz.questions.length &&
-              s.quizTitle === selectedQuiz.title)
-        );
-    const totalStudents = quizSubmissions.length;
-    const maxPossibleScore = selectedQuiz.questions.length;
-    const averageScore =
-      totalStudents > 0
-        ? Number(
-            (quizSubmissions.reduce((sum, s) => sum + s.score, 0) / totalStudents).toFixed(1)
-          )
-        : 0;
-    const averagePercentage =
-      totalStudents > 0
-        ? Math.round(
-            quizSubmissions.reduce((sum, s) => sum + s.percentage, 0) / totalStudents
-          )
-        : 0;
-    const passedCount = quizSubmissions.filter((s) => s.percentage >= 50).length;
-    const passRate = totalStudents > 0 ? Math.round((passedCount / totalStudents) * 100) : 0;
-    const highestScore =
-      totalStudents > 0 ? Math.max(...quizSubmissions.map((s) => s.score)) : 0;
-    const lowestScore =
-      totalStudents > 0 ? Math.min(...quizSubmissions.map((s) => s.score)) : 0;
-    const averageDurationSeconds =
-      totalStudents > 0
-        ? Math.round(
-            quizSubmissions.reduce((sum, s) => sum + s.durationSeconds, 0) / totalStudents
-          )
-        : 0;
+    const cloudSubs = await fetchAllCloudSubmissions();
+    const mergedSubmissions = mergeSubmissionsLists(cloudSubs, db.submissions);
+    db.submissions = mergedSubmissions;
+    saveLocalStore(db);
 
-    const questionAnalytics: QuestionAnalyticsItem[] = selectedQuiz.questions.map((q) => {
-      const optionCounts: [number, number, number, number] = [0, 0, 0, 0];
-      let correctCount = 0;
-      quizSubmissions.forEach((sub) => {
-        const ans = sub.answers.find((a) => a.questionId === q.id);
-        if (ans && ans.selectedOption >= 0 && ans.selectedOption <= 3) {
-          optionCounts[ans.selectedOption]++;
-          if (ans.isCorrect) correctCount++;
-        }
-      });
-      const correctRate =
-        totalStudents > 0 ? Math.round((correctCount / totalStudents) * 100) : 0;
-      return {
-        questionId: q.id,
-        questionText: q.question,
-        correctOptionIndex: q.correct,
-        totalAttempts: totalStudents,
-        correctCount,
-        correctRate,
-        optionCounts
-      };
-    });
-
-    const payload: DashboardPayload = {
-      quizzes: db.quizzes,
-      activeQuizId: db.activeQuizId,
-      selectedQuizId: viewAllQuizzes ? 'all' : selectedQuiz.id,
-      submissions: quizSubmissions,
-      stats: {
-        totalStudents,
-        averageScore,
-        maxPossibleScore,
-        averagePercentage,
-        passRate,
-        highestScore,
-        lowestScore,
-        averageDurationSeconds
-      },
-      questionAnalytics,
-      dbMetadata: {
-        engine: 'Hybrid Cloud / LocalStorage Persistent Store',
-        tableName: 'student_submissions & quizzes',
-        storageFile: 'data/quiz_database.json',
-        fileSizeBytes: JSON.stringify(db).length,
-        totalRecords: db.submissions.length,
-        totalQuizzes: db.quizzes.length,
-        lastUpdated: db.lastUpdated,
-        columns: DB_COLUMNS_SCHEMA
-      }
-    };
+    const payload = computeDashboardPayload(
+      db.quizzes,
+      db.activeQuizId,
+      requestedQuizId,
+      mergedSubmissions
+    );
     return jsonResponse(payload);
   }
 
   return jsonResponse({ ok: true });
 }
 
+const CENTRAL_BACKEND_ORIGIN =
+  (import.meta as any).env?.VITE_API_BASE_URL ||
+  'https://ais-pre-pzyyurwojyntjzzuwufstu-706415792893.europe-west1.run.app';
+
 export async function apiFetch(
   input: string,
   init?: RequestInit
 ): Promise<Response> {
   if (input.startsWith('/api/')) {
+    const url = new URL(input, window.location.origin);
+    const pathname = url.pathname;
+    const method = (init?.method || 'GET').toUpperCase();
+
+    // Always mirror mutations and reads with Firebase Firestore Cloud DB so Vercel & Cloud Run share 100% of state
+    if (pathname === '/api/submissions' && method === 'POST') {
+      // Save via Cloud-First handler (which writes to Firestore), and also notify backend if reachable
+      const cloudRes = await handleCloudFirstRequest(input, init);
+      try {
+        window.fetch(input, init).catch(() => {});
+        if (window.location.origin !== CENTRAL_BACKEND_ORIGIN) {
+          window.fetch(`${CENTRAL_BACKEND_ORIGIN}${input}`, init).catch(() => {});
+        }
+      } catch {
+        // ignore
+      }
+      return cloudRes;
+    }
+
+    if (pathname === '/api/dashboard' && method === 'GET') {
+      // Fetch both server dashboard (if reachable) and Firebase Cloud submissions, then merge!
+      let serverSubmissions: StudentSubmission[] = [];
+      let serverQuizzes: QuizDefinition[] = [];
+      try {
+        const res = await window.fetch(input, init);
+        const ct = res.headers.get('content-type') || '';
+        if (res.ok && ct.includes('application/json')) {
+          const serverPayload = (await res.clone().json()) as DashboardPayload;
+          if (Array.isArray(serverPayload.submissions)) {
+            serverSubmissions = serverPayload.submissions;
+          }
+          if (Array.isArray(serverPayload.quizzes)) {
+            serverQuizzes = serverPayload.quizzes;
+          }
+          // Sync server submissions up to Firestore so they're available everywhere
+          await Promise.allSettled(
+            serverSubmissions.map((s) => saveSubmissionToCloud(s))
+          );
+        }
+      } catch {
+        // Server not reachable (e.g. on static Vercel), rely on Firestore
+      }
+
+      const db = getLocalStore();
+      const [cloudActiveQuizId, cloudQuizzes, cloudSubs] = await Promise.all([
+        fetchActiveQuizIdFromCloud(),
+        fetchCloudQuizzes(),
+        fetchAllCloudSubmissions()
+      ]);
+
+      const activeQuizId = cloudActiveQuizId || db.activeQuizId;
+      const allQuizzes = mergeQuizzesLists(
+        mergeQuizzesLists(db.quizzes, serverQuizzes, activeQuizId),
+        cloudQuizzes,
+        activeQuizId
+      );
+      const allSubmissions = mergeSubmissionsLists(
+        cloudSubs,
+        mergeSubmissionsLists(serverSubmissions, db.submissions)
+      );
+
+      db.activeQuizId = activeQuizId;
+      db.quizzes = allQuizzes;
+      db.submissions = allSubmissions;
+      saveLocalStore(db);
+
+      const requestedQuizId = url.searchParams.get('quizId') || '';
+      const mergedPayload = computeDashboardPayload(
+        allQuizzes,
+        activeQuizId,
+        requestedQuizId,
+        allSubmissions
+      );
+      return jsonResponse(mergedPayload);
+    }
+
+    if (pathname.match(/^\/api\/quizzes\/([^/]+)\/activate$/) && method === 'POST') {
+      const m = pathname.match(/^\/api\/quizzes\/([^/]+)\/activate$/);
+      if (m) {
+        await saveActiveQuizIdToCloud(decodeURIComponent(m[1]));
+      }
+    }
+
     try {
       const response = await window.fetch(input, init);
       const contentType = response.headers.get('content-type') || '';
       if (
-        response.status === 404 ||
-        response.status === 405 ||
-        contentType.includes('text/html')
+        response.status !== 404 &&
+        response.status !== 405 &&
+        !contentType.includes('text/html')
       ) {
-        return handleLocalApiRequest(input, init);
+        if (pathname === '/api/quizzes/active' && method === 'GET') {
+          const cloudActiveId = await fetchActiveQuizIdFromCloud();
+          if (cloudActiveId) {
+            const db = getLocalStore();
+            const cloudQuizzes = await fetchCloudQuizzes();
+            const merged = mergeQuizzesLists(db.quizzes, cloudQuizzes, cloudActiveId);
+            const activeQuiz = merged.find((q) => q.id === cloudActiveId);
+            if (activeQuiz) {
+              return jsonResponse({ quiz: activeQuiz });
+            }
+          }
+        }
+        return response;
       }
-      return response;
     } catch {
-      return handleLocalApiRequest(input, init);
+      // Fall through to remote backend or Firestore
     }
+
+    return handleCloudFirstRequest(input, init);
   }
 
   return window.fetch(input, init);
 }
-

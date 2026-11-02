@@ -1,0 +1,152 @@
+{
+  "entities": {
+    "StudentSubmission": {
+      "title": "StudentSubmission",
+      "description": "A student's completed quiz attempt and graded answers",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique submission identifier"
+        },
+        "quizId": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "ID of the quiz taken"
+        },
+        "quizTitle": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Title of the quiz taken"
+        },
+        "studentId": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Student training or university ID"
+        },
+        "studentName": {
+          "type": "string",
+          "maxLength": 160,
+          "description": "Student full name"
+        },
+        "score": {
+          "type": "number",
+          "description": "Number of correct answers"
+        },
+        "totalQuestions": {
+          "type": "number",
+          "description": "Total number of questions in the quiz"
+        },
+        "percentage": {
+          "type": "number",
+          "description": "Score percentage between 0 and 100"
+        },
+        "grade": {
+          "type": "string",
+          "maxLength": 48,
+          "description": "Arabic verbal grade"
+        },
+        "durationSeconds": {
+          "type": "number",
+          "description": "Elapsed time in seconds"
+        },
+        "answersJson": {
+          "type": "string",
+          "maxLength": 50000,
+          "description": "Serialized answers array"
+        },
+        "submittedAt": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "ISO timestamp of submission"
+        }
+      },
+      "required": [
+        "id",
+        "quizId",
+        "quizTitle",
+        "studentId",
+        "studentName",
+        "score",
+        "totalQuestions",
+        "percentage",
+        "grade",
+        "durationSeconds",
+        "answersJson",
+        "submittedAt"
+      ]
+    },
+    "PlatformConfig": {
+      "title": "PlatformConfig",
+      "description": "Global active quiz configuration",
+      "type": "object",
+      "properties": {
+        "activeQuizId": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Currently active quiz ID for students"
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "ISO timestamp of last update"
+        }
+      },
+      "required": ["activeQuizId", "updatedAt"]
+    },
+    "CustomQuiz": {
+      "title": "CustomQuiz",
+      "description": "Uploaded or modified quiz definition",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Quiz ID"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Quiz title"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Quiz description"
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Creation timestamp"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether this quiz is active"
+        },
+        "questionsJson": {
+          "type": "string",
+          "maxLength": 800000,
+          "description": "Serialized quiz questions"
+        }
+      },
+      "required": ["id", "title", "description", "createdAt", "isActive", "questionsJson"]
+    }
+  },
+  "firestore": {
+    "/student_submissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/StudentSubmission" },
+      "description": "Stores all student quiz submissions from Vercel, GitHub, and Cloud Run"
+    },
+    "/platform_state/{docId}": {
+      "schema": { "$ref": "#/entities/PlatformConfig" },
+      "description": "Stores active quiz ID across all deployments"
+    },
+    "/quizzes/{quizId}": {
+      "schema": { "$ref": "#/entities/CustomQuiz" },
+      "description": "Stores custom uploaded quizzes across all deployments"
+    }
+  }
+}

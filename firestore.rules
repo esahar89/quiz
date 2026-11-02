@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isValidSubmission(data) {
+      return data.keys().hasAll([
+        'id',
+        'quizId',
+        'quizTitle',
+        'studentId',
+        'studentName',
+        'score',
+        'totalQuestions',
+        'percentage',
+        'grade',
+        'durationSeconds',
+        'answersJson',
+        'submittedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'id',
+        'quizId',
+        'quizTitle',
+        'studentId',
+        'studentName',
+        'score',
+        'totalQuestions',
+        'percentage',
+        'grade',
+        'durationSeconds',
+        'answersJson',
+        'submittedAt'
+      ]) &&
+      data.id is string && data.id.size() >= 1 && data.id.size() <= 64 &&
+      data.quizId is string && data.quizId.size() >= 1 && data.quizId.size() <= 64 &&
+      data.quizTitle is string && data.quizTitle.size() >= 1 && data.quizTitle.size() <= 200 &&
+      data.studentId is string && data.studentId.size() >= 1 && data.studentId.size() <= 64 &&
+      data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 160 &&
+      data.score is number && data.score >= 0 && data.score <= 500 &&
+      data.totalQuestions is number && data.totalQuestions >= 1 && data.totalQuestions <= 500 &&
+      data.percentage is number && data.percentage >= 0 && data.percentage <= 100 &&
+      data.grade is string && data.grade.size() >= 1 && data.grade.size() <= 48 &&
+      data.durationSeconds is number && data.durationSeconds >= 0 && data.durationSeconds <= 86400 &&
+      data.answersJson is string && data.answersJson.size() >= 2 && data.answersJson.size() <= 50000 &&
+      data.submittedAt is string && data.submittedAt.size() >= 10 && data.submittedAt.size() <= 64;
+    }
+
+    function isValidPlatformState(data) {
+      return data.keys().hasAll(['activeQuizId', 'updatedAt']) &&
+        data.keys().hasOnly(['activeQuizId', 'updatedAt']) &&
+        data.activeQuizId is string && data.activeQuizId.size() >= 1 && data.activeQuizId.size() <= 64 &&
+        data.updatedAt is string && data.updatedAt.size() >= 10 && data.updatedAt.size() <= 64;
+    }
+
+    function isValidQuizDoc(data) {
+      return data.keys().hasAll(['id', 'title', 'description', 'createdAt', 'isActive', 'questionsJson']) &&
+        data.keys().hasOnly(['id', 'title', 'description', 'createdAt', 'isActive', 'questionsJson']) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 64 &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+        data.description is string && data.description.size() >= 1 && data.description.size() <= 500 &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 64 &&
+        data.isActive is bool &&
+        data.questionsJson is string && data.questionsJson.size() >= 2 && data.questionsJson.size() <= 800000;
+    }
+
+    match /test/{docId} {
+      allow get: if isValidId(docId);
+    }
+
+    match /student_submissions/{submissionId} {
+      allow get: if isValidId(submissionId);
+      allow list: if resource.data.percentage >= 0 && resource.data.percentage <= 100;
+      allow create, update: if isValidId(submissionId) && isValidSubmission(incoming());
+      allow delete: if isValidId(submissionId);
+    }
+
+    match /platform_state/{docId} {
+      allow get: if isValidId(docId);
+      allow list: if resource.data.activeQuizId is string;
+      allow create, update: if isValidId(docId) && isValidPlatformState(incoming());
+    }
+
+    match /quizzes/{quizId} {
+      allow get: if isValidId(quizId);
+      allow list: if resource.data.title is string;
+      allow create, update: if isValidId(quizId) && isValidQuizDoc(incoming());
+      allow delete: if isValidId(quizId);
+    }
+  }
+}
