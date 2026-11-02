@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملف إنجاز الطالبة زينة حسن نصار</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f3f4f6;
+            color: #4a4a4a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        /* شريط التحكم العلوي - يختفي عند الطباعة */
+        .toolbar {
+            background: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            border: 2px solid #fbcfe8;
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 25px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .btn-print:hover {
+            transform: scale(1.03);
+        }
+
+        /* إعدادات صفحة A4 بهوامش صغيرة جداً (5 ملم) وبدون ترقيم */
+        .a4-page {
+            width: 210mm;
+            height: 297mm;
+            background: #ffffff;
+            padding: 5mm; /* هامش صغير جداً */
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-inner {
+            width: 100%;
+            height: 100%;
+            border: 3px dashed #f472b6;
+            border-radius: 18px;
+            padding: 6mm;
+            background: linear-gradient(180deg, #fffbfd 0%, #fdf4ff 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 6mm;
+        }
+
+        /* تنسيق الجزئيات داخل كل ورقة */
+        .section-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 2px solid #fce7f3;
+            padding: 16px 20px;
+            box-shadow: 0 4px 12px rgba(244, 114, 182, 0.06);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .section-header {
+            background: linear-gradient(90deg, #fce7f3, #ede9fe);
+            padding: 10px 18px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-right: 6px solid #ec4899;
+            margin-bottom: 12px;
+        }
+
+        .section-header h2 {
+            font-size: 21px;
+            color: #9d174d;
+            font-weight: 800;
+        }
+
+        .section-header span {
+            font-size: 24px;
+        }
+
+        /* الجزئية 1: البطاقة التعريفية */
+        .title-banner {
+            text-align: center;
+            background: linear-gradient(135deg, #fdf2f8, #f3e8ff);
+            padding: 10px;
+            border-radius: 14px;
+            border: 2px solid #fbcfe8;
+            margin-bottom: 12px;
+        }
+
+        .title-banner h1 {
+            color: #be185d;
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .title-banner p {
+            color: #7e22ce;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 115px 1fr;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .avatar-circle {
+            width: 115px;
+            height: 115px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fce7f3, #e0e7ff);
+            border: 3px dashed #ec4899;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 42px;
+            color: #be185d;
+        }
+
+        .avatar-circle small {
+            font-size: 11px;
+            font-weight: 700;
+            color: #9d174d;
+            margin-top: 2px;
+        }
+
+        .info-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .info-item {
+            background: #fdf2f8;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border-right: 4px solid #f472b6;
+        }
+
+        .info-item.purple {
+            background: #f5f3ff;
+            border-right-color: #a855f7;
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            font-size: 17px;
+            color: #1f2937;
+            font-weight: 800;
+        }
+
+        .ambition-box {
+            background: linear-gradient(90deg, #fffbeb, #fef3c7);
+            border: 2px dashed #f59e0b;
+            border-radius: 12px;
+            padding: 12px 16px;
+            text-align: center;
+        }
+
+        .ambition-title {
+            font-size: 15px;
+            color: #b45309;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .ambition-text {
+            font-size: 17px;
+            color: #78350f;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        /* الجزئية 2: معرض الإنجازات وأوسمة التميز */
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            flex: 1;
+            align-items: stretch;
+        }
+
+        .badge-card {
+            background: #fffbfd;
+            border: 2px solid #fbcfe8;
+            border-radius: 14px;
+            padding: 12px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .badge-card.alt {
+            background: #faf5ff;
+            border-color: #e9d5ff;
+        }
+
+        .badge-icon {
+            font-size: 36px;
+            margin-bottom: 6px;
+        }
+
+        .badge-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #831843;
+            margin-bottom: 4px;
+        }
+
+        .badge-desc {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        /* الجزئية 3: الجدول الدراسي الفارغ (4 حصص) */
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            flex: 1;
+            margin-top: 4px;
+        }
+
+        .schedule-table th, 
+        .schedule-table td {
+            border: 2px solid #f9a8d4;
+            text-align: center;
+        }
+
+        .schedule-table th {
+            background: linear-gradient(180deg, #fce7f3, #fbcfe8);
+            color: #831843;
+            font-size: 16px;
+            font-weight: 800;
+            padding: 10px 6px;
+            width: 21%;
+        }
+
+        .schedule-table th.day-col {
+            width: 16%;
+            background: #f3e8ff;
+            color: #581c87;
+        }
+
+        .schedule-table td.day-name {
+            background: #faf5ff;
+            color: #6b21a8;
+            font-weight: 800;
+            font-size: 16px;
+            padding: 14px 6px;
+        }
+
+        .schedule-table td.empty-cell {
+            background: #ffffff;
+            height: 44px;
+        }
+
+        /* الجزئية 4: ركن القراءة وكلمة المعلمة */
+        .reading-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 14px;
+            flex: 1;
+        }
+
+        .stories-box {
+            background: #f0fdf4;
+            border: 2px solid #bbf7d0;
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stories-box h3 {
+            color: #166534;
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .story-line {
+            background: white;
+            border: 1.5px dashed #86efac;
+            border-radius: 8px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 13px;
+            color: #15803d;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .teacher-box {
+            background: linear-gradient(
