@@ -9,18 +9,11 @@ import { StudentLoginGate } from './components/StudentLoginGate';
 import { StepByStepQuiz } from './components/StepByStepQuiz';
 import { StudentResultView } from './components/StudentResultView';
 import { TeacherDashboard } from './components/TeacherDashboard';
-import { QUIZ_QUESTIONS } from './data/questions';
+import { buildComptiaTechPlusQuiz } from './data/comptiaTechPlusQuiz';
 import { apiFetch } from './utils/apiFallback';
 import type { QuizDefinition, StudentSubmission } from './types/quiz';
 
-const FALLBACK_QUIZ: QuizDefinition = {
-  id: 'quiz-bios-uefi-1',
-  title: 'اختبار BIOS و UEFI وأنواع الموصلات',
-  description: 'مستوى سهل للمبتدئين · مدعم بالصور التوضيحية المباشرة (14 سؤالاً)',
-  createdAt: new Date().toISOString(),
-  isActive: true,
-  questions: QUIZ_QUESTIONS
-};
+const FALLBACK_QUIZ: QuizDefinition = buildComptiaTechPlusQuiz(true);
 
 export default function App() {
   const [role, setRole] = useState<'guest' | 'student' | 'admin'>('guest');

@@ -365,6 +365,22 @@ function ensureDatabase(): DatabaseStore {
     }
 
     quizzes = quizzes.map((q) => {
+      if (q.id === techPlusQuiz.id) {
+        return {
+          ...techPlusQuiz,
+          title: q.title || techPlusQuiz.title,
+          description: q.description || techPlusQuiz.description,
+          isActive: q.id === activeQuizId
+        };
+      }
+      if (q.id === comptiaQuiz.id) {
+        return {
+          ...comptiaQuiz,
+          title: q.title || comptiaQuiz.title,
+          description: q.description || comptiaQuiz.description,
+          isActive: q.id === activeQuizId
+        };
+      }
       const { quiz: cleaned, modified } = sanitizeQuizIfPolluted(q);
       if (modified) anyModified = true;
       return {

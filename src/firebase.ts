@@ -8,7 +8,9 @@ import {
   setDoc,
   getDocs,
   deleteDoc,
-  collection
+  collection,
+  query,
+  where
 } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 import type { QuizDefinition, StudentSubmission } from './types/quiz';
@@ -90,17 +92,17 @@ export async function saveSubmissionToCloud(submission: StudentSubmission): Prom
   const path = `student_submissions/${docId}`;
   try {
     await setDoc(doc(db, 'student_submissions', docId), {
-      id: String(submission.id).slice(0, 64),
-      quizId: String(submission.quizId).slice(0, 64),
-      quizTitle: String(submission.quizTitle).slice(0, 200),
-      studentId: String(submission.studentId).slice(0, 64),
-      studentName: String(submission.studentName).slice(0, 160),
-      score: Number(submission.score) || 0,
-      totalQuestions: Number(submission.totalQuestions) || 1,
+      id: String(submission.id || docId).slice(0, 64),
+      quizId: String(submission.quizId || 'quiz-default').slice(0, 64),
+      quizTitle: String(submission.quizTitle || 'اختبار تفاعلي').slice(0, 200),
+      studentId: String(submission.studentId || '0000').slice(0, 64),
+      studentName: String(submission.studentName || 'طالب').slice(0, 160),
+      score: Math.min(500, Math.max(0, Number(submission.score) || 0)),
+      totalQuestions: Math.min(500, Math.max(1, Number(submission.totalQuestions) || 1)),
       percentage: Math.min(100, Math.max(0, Number(submission.percentage) || 0)),
-      grade: String(submission.grade).slice(0, 48),
-      durationSeconds: Math.max(0, Number(submission.durationSeconds) || 0),
-      answersJson: JSON.stringify(submission.answers || []).slice(0, 50000),
+      grade: String(submission.grade || 'مقبول').slice(0, 48),
+      durationSeconds: Math.min(86400, Math.max(0, Number(submission.durationSeconds) || 0)),
+      answersJson: JSON.stringify(Array.isArray(submission.answers) ? submission.answers : []).slice(0, 50000),
       submittedAt: String(submission.submittedAt || new Date().toISOString()).slice(0, 64)
     });
   } catch (error) {
@@ -115,7 +117,12 @@ export async function saveSubmissionToCloud(submission: StudentSubmission): Prom
 export async function fetchAllCloudSubmissions(): Promise<StudentSubmission[]> {
   const path = 'student_submissions';
   try {
-    const snap = await getDocs(collection(db, 'student_submissions'));
+    const submissionsQuery = query(
+      collection(db, 'student_submissions'),
+      where('percentage', '>=', 0),
+      where('percentage', '<=', 100)
+    );
+    const snap = await getDocs(submissionsQuery);
     const results: StudentSubmission[] = [];
     snap.forEach((docSnap) => {
       const d = docSnap.data();
@@ -177,9 +184,12 @@ export async function deleteSubmissionFromCloud(
   }
 }
 
+const ACTIVE_CONFIG_DOC_ID = 'config_v4';
+const DEFAULT_CLOUD_ACTIVE_QUIZ_ID = 'quiz-comptia-techplus-70';
+
 export async function saveActiveQuizIdToCloud(activeQuizId: string): Promise<void> {
   try {
-    await setDoc(doc(db, 'platform_state', 'config'), {
+    await setDoc(doc(db, 'platform_state', ACTIVE_CONFIG_DOC_ID), {
       activeQuizId: String(activeQuizId).slice(0, 64),
       updatedAt: new Date().toISOString()
     });
@@ -190,14 +200,16 @@ export async function saveActiveQuizIdToCloud(activeQuizId: string): Promise<voi
 
 export async function fetchActiveQuizIdFromCloud(): Promise<string | null> {
   try {
-    const snap = await getDoc(doc(db, 'platform_state', 'config'));
+    const snap = await getDoc(doc(db, 'platform_state', ACTIVE_CONFIG_DOC_ID));
     if (snap.exists()) {
-      return snap.data()?.activeQuizId || null;
+      return snap.data()?.activeQuizId || DEFAULT_CLOUD_ACTIVE_QUIZ_ID;
     }
+    // Initialize cloud config to Quiz 4 (CompTIA Tech+ 70Q) on first read
+    await saveActiveQuizIdToCloud(DEFAULT_CLOUD_ACTIVE_QUIZ_ID);
+    return DEFAULT_CLOUD_ACTIVE_QUIZ_ID;
   } catch {
-    // ignore
+    return null;
   }
-  return null;
 }
 
 export async function saveCustomQuizToCloud(quiz: QuizDefinition): Promise<void> {
@@ -218,7 +230,11 @@ export async function saveCustomQuizToCloud(quiz: QuizDefinition): Promise<void>
 
 export async function fetchCloudQuizzes(): Promise<QuizDefinition[]> {
   try {
-    const snap = await getDocs(collection(db, 'quizzes'));
+    const quizzesQuery = query(
+      collection(db, 'quizzes'),
+      where('createdAt', '>=', '2000-01-01')
+    );
+    const snap = await getDocs(quizzesQuery);
     const quizzes: QuizDefinition[] = [];
     snap.forEach((docSnap) => {
       const d = docSnap.data();

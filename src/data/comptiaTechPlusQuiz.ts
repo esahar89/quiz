@@ -592,7 +592,11 @@ function redistributeOptions(
 
 function selectTechPlusVisual(questionText: string, idx: number): { svg: string; caption: string } {
   const lower = questionText.toLowerCase();
-  if (lower.includes('binary') || lower.includes('smallest increment of digital data') || lower.includes('hexadecimal')) {
+  if (
+    (lower.includes('binary') && !lower.includes('executable binary')) ||
+    lower.includes('smallest increment of digital data') ||
+    lower.includes('hexadecimal')
+  ) {
     return {
       svg: COMPTIA_SVG_DIAGRAMS.binaryTable,
       caption: 'Binary & Digital Data Representation (8-Bit Byte)'
@@ -634,7 +638,11 @@ function selectTechPlusVisual(questionText: string, idx: number): { svg: string;
       caption: 'Operating System Architecture Layers'
     };
   }
-  if (lower.includes('primary key') || lower.includes('referential integrity')) {
+  if (
+    lower.includes('primary key') ||
+    lower.includes('referential integrity') ||
+    lower.includes('uniquely identifies each individual record')
+  ) {
     return {
       svg: COMPTIA_SVG_DIAGRAMS.relationalKeys,
       caption: 'Relational Database Schema & Primary/Foreign Keys'

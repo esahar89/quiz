@@ -880,9 +880,34 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 تحليل أسئلة: {viewedQuiz?.title} ({viewedQuestions.length} سؤالاً)
               </h2>
               <p className="text-xs text-slate-400">
-                توزيع مواقع الإجابات الصحيحة ونسب اختيارات الطلاب لكل سؤال.
+                توزيع مواقع الإجابات الصحيحة ونسب اختيارات الطلاب لكل سؤال (مطابق تماماً لما يظهر للطالب في الاختبار).
               </p>
             </div>
+
+            {viewedQuiz && (
+              <div className="flex items-center gap-2.5">
+                {viewedQuiz.id === data?.activeQuizId ? (
+                  <span className="px-3.5 py-2 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-extrabold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>هذا الكويز مفعل حالياً ويظهر للطلاب ✓</span>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={activatingId === viewedQuiz.id}
+                    onClick={() => handleActivateQuizForStudents(viewedQuiz.id)}
+                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-lg shadow-emerald-600/20 transition"
+                  >
+                    <Power className="w-4 h-4" />
+                    <span>
+                      {activatingId === viewedQuiz.id
+                        ? 'جاري التفعيل...'
+                        : 'تفعيل هذا الكويز ليظهر للطلاب الآن'}
+                    </span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

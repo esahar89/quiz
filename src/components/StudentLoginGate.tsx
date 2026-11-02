@@ -42,6 +42,12 @@ export const StudentLoginGate: React.FC<StudentLoginGateProps> = ({
   );
 
   useEffect(() => {
+    if (initialActiveQuiz) {
+      setActiveQuiz(initialActiveQuiz);
+    }
+  }, [initialActiveQuiz]);
+
+  useEffect(() => {
     apiFetch('/api/quizzes/active', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {

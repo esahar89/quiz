@@ -21,8 +21,13 @@ import type {
   DatabaseColumnSchema
 } from '../types/quiz';
 
-const STORAGE_KEY = 'sahar_quiz_platform_db_v4';
-const LEGACY_KEYS = ['sahar_quiz_platform_db_v3', 'sahar_quiz_platform_db_v2', 'sahar_quiz_platform_db_v1'];
+const STORAGE_KEY = 'sahar_quiz_platform_db_v5';
+const LEGACY_KEYS = [
+  'sahar_quiz_platform_db_v4',
+  'sahar_quiz_platform_db_v3',
+  'sahar_quiz_platform_db_v2',
+  'sahar_quiz_platform_db_v1'
+];
 
 interface LocalDatabaseStore {
   version: number;
@@ -167,8 +172,17 @@ function getLocalStore(): LocalDatabaseStore {
       const parsed = JSON.parse(raw) as LocalDatabaseStore;
       if (Array.isArray(parsed.quizzes) && parsed.quizzes.length > 0) {
         for (const builtIn of initialQuizzes) {
-          if (!parsed.quizzes.some((q) => q.id === builtIn.id)) {
+          const existingIdx = parsed.quizzes.findIndex((q) => q.id === builtIn.id);
+          if (existingIdx === -1) {
             parsed.quizzes.push(builtIn);
+          } else {
+            // Always keep built-in quiz questions in sync with latest definitions
+            parsed.quizzes[existingIdx] = {
+              ...builtIn,
+              title: parsed.quizzes[existingIdx].title || builtIn.title,
+              description: parsed.quizzes[existingIdx].description || builtIn.description,
+              isActive: parsed.quizzes[existingIdx].id === parsed.activeQuizId
+            };
           }
         }
         if (legacySubmissions.length > 0) {
@@ -193,7 +207,7 @@ function getLocalStore(): LocalDatabaseStore {
   }
 
   const fallbackStore: LocalDatabaseStore = {
-    version: 4,
+    version: 5,
     lastUpdated: new Date().toISOString(),
     activeQuizId: FOURTH_QUIZ_ID,
     quizzes: initialQuizzes,
@@ -688,10 +702,6 @@ async function handleCloudFirstRequest(urlStr: string, init?: RequestInit): Prom
   return jsonResponse({ ok: true });
 }
 
-const CENTRAL_BACKEND_ORIGIN =
-  (import.meta as any).env?.VITE_API_BASE_URL ||
-  'https://ais-pre-pzyyurwojyntjzzuwufstu-706415792893.europe-west1.run.app';
-
 export async function apiFetch(
   input: string,
   init?: RequestInit
@@ -701,23 +711,27 @@ export async function apiFetch(
     const pathname = url.pathname;
     const method = (init?.method || 'GET').toUpperCase();
 
-    // Always mirror mutations and reads with Firebase Firestore Cloud DB so Vercel & Cloud Run share 100% of state
-    if (pathname === '/api/submissions' && method === 'POST') {
-      // Save via Cloud-First handler (which writes to Firestore), and also notify backend if reachable
+    // 1. Submissions, Active Quiz, Student Auth, and Quiz Activation always use Cloud-First (Firestore + Built-in Quizzes)
+    // and mirror to local Express server when reachable
+    if (
+      (pathname === '/api/submissions' && method === 'POST') ||
+      (pathname === '/api/quizzes/active' && method === 'GET') ||
+      (pathname === '/api/auth/student' && method === 'POST') ||
+      (pathname.match(/^\/api\/quizzes\/([^/]+)\/activate$/) && method === 'POST')
+    ) {
       const cloudRes = await handleCloudFirstRequest(input, init);
-      try {
-        window.fetch(input, init).catch(() => {});
-        if (window.location.origin !== CENTRAL_BACKEND_ORIGIN) {
-          window.fetch(`${CENTRAL_BACKEND_ORIGIN}${input}`, init).catch(() => {});
+      if (method === 'POST') {
+        try {
+          window.fetch(input, init).catch(() => {});
+        } catch {
+          // ignore
         }
-      } catch {
-        // ignore
       }
       return cloudRes;
     }
 
+    // 2. Dashboard merges server submissions (if running on Express) + Firestore Cloud DB
     if (pathname === '/api/dashboard' && method === 'GET') {
-      // Fetch both server dashboard (if reachable) and Firebase Cloud submissions, then merge!
       let serverSubmissions: StudentSubmission[] = [];
       let serverQuizzes: QuizDefinition[] = [];
       try {
@@ -731,7 +745,6 @@ export async function apiFetch(
           if (Array.isArray(serverPayload.quizzes)) {
             serverQuizzes = serverPayload.quizzes;
           }
-          // Sync server submissions up to Firestore so they're available everywhere
           await Promise.allSettled(
             serverSubmissions.map((s) => saveSubmissionToCloud(s))
           );
@@ -771,39 +784,6 @@ export async function apiFetch(
         allSubmissions
       );
       return jsonResponse(mergedPayload);
-    }
-
-    if (pathname.match(/^\/api\/quizzes\/([^/]+)\/activate$/) && method === 'POST') {
-      const m = pathname.match(/^\/api\/quizzes\/([^/]+)\/activate$/);
-      if (m) {
-        await saveActiveQuizIdToCloud(decodeURIComponent(m[1]));
-      }
-    }
-
-    try {
-      const response = await window.fetch(input, init);
-      const contentType = response.headers.get('content-type') || '';
-      if (
-        response.status !== 404 &&
-        response.status !== 405 &&
-        !contentType.includes('text/html')
-      ) {
-        if (pathname === '/api/quizzes/active' && method === 'GET') {
-          const cloudActiveId = await fetchActiveQuizIdFromCloud();
-          if (cloudActiveId) {
-            const db = getLocalStore();
-            const cloudQuizzes = await fetchCloudQuizzes();
-            const merged = mergeQuizzesLists(db.quizzes, cloudQuizzes, cloudActiveId);
-            const activeQuiz = merged.find((q) => q.id === cloudActiveId);
-            if (activeQuiz) {
-              return jsonResponse({ quiz: activeQuiz });
-            }
-          }
-        }
-        return response;
-      }
-    } catch {
-      // Fall through to remote backend or Firestore
     }
 
     return handleCloudFirstRequest(input, init);

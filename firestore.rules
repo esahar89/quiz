@@ -87,13 +87,13 @@ service cloud.firestore {
 
     match /platform_state/{docId} {
       allow get: if isValidId(docId);
-      allow list: if resource.data.activeQuizId is string;
+      allow list: if resource.data.updatedAt >= '2000-01-01';
       allow create, update: if isValidId(docId) && isValidPlatformState(incoming());
     }
 
     match /quizzes/{quizId} {
       allow get: if isValidId(quizId);
-      allow list: if resource.data.title is string;
+      allow list: if resource.data.createdAt >= '2000-01-01';
       allow create, update: if isValidId(quizId) && isValidQuizDoc(incoming());
       allow delete: if isValidId(quizId);
     }
